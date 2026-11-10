@@ -1,6 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Maison Hyderabad",
+  "url": "https://lelakolli.github.io/dhanari/",
+  "logo": "https://lelakolli.github.io/dhanari/",
+  "description": "Buyer-first residential intelligence portal for Hyderabad. Verified builder credentials, TSRERA project data, locality research and guided site visits. No buyer fee.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Hyderabad",
+    "addressRegion": "Telangana",
+    "addressCountry": "IN"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+91-99999-99999",
+    "contactType": "customer service",
+    "availableLanguage": ["English", "Hindi"]
+  },
+  "sameAs": ["https://wa.me/919999999999"]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Maison Hyderabad",
+  "url": "https://lelakolli.github.io/dhanari/",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://lelakolli.github.io/dhanari/#projects",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maison Hyderabad — Verified Flats, Villas & Plots | TSRERA Builder Intelligence</title>
@@ -70,6 +106,29 @@
   --header-h:76px;
   --maxw:1280px;
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* Dark theme */
+.dark-theme{
+  --ink:#F5F1E6;
+  --ink-soft:#EAE3D2;
+  --ink-3:#D4C9B8;
+  --ink-4:#C2B7A4;
+  --ivory:#0B120F;
+  --sand:#14201A;
+  --sand-deep:#1E3028;
+  --paper:#14201A;
+  --text:#E8E2D6;
+  --text-soft:#C9C0B0;
+  --muted:#8A7F6F;
+  --muted-2:#7A705E;
+  --line:rgba(248,245,238,.12);
+  --line-strong:rgba(248,245,238,.22);
+  --line-inverse:rgba(10,20,17,.16);
+  --shadow-xs:0 1px 2px rgba(0,0,0,.15);
+  --shadow-sm:0 6px 18px -10px rgba(0,0,0,.25);
+  --shadow-md:0 18px 40px -22px rgba(0,0,0,.30),0 2px 8px rgba(0,0,0,.08);
+  --shadow-lg:0 40px 80px -40px rgba(0,0,0,.35),0 8px 24px -12px rgba(0,0,0,.10);
 }
 
 /* 2. RESET / BASE ------------------------------------------- */
@@ -832,6 +891,9 @@ body.has-shortbar .wa{bottom:88px}
         <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg>
         <span class="hdr-shortlist__count" id="shortlistCount">0</span>
       </button>
+      <button class="btn btn--ghost-light btn--sm" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="false">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <a href="#visit" class="btn btn--gold btn--sm hdr-cta" aria-label="Book a site visit">
         <span class="hdr-cta__label">Book a Site Visit</span>
         <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
@@ -949,6 +1011,10 @@ body.has-shortbar .wa{bottom:88px}
         </button>
       </div>
       <div class="searchpanel__foot">
+        <label class="field" style="flex:1;max-width:340px">
+          <span class="field__label" style="display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin-bottom:.35rem">Keyword search</span>
+          <input type="text" class="control" id="fKeyword" placeholder="Search project, builder or locality…" style="width:100%">
+        </label>
         <span>Popular right now:</span>
         <button type="button" class="quick-chip" data-quick="kokapet">Kokapet &lt; &#8377;2 Cr</button>
         <button type="button" class="quick-chip" data-quick="ready">Ready to move</button>
@@ -2518,7 +2584,7 @@ function toast(msg){
 }
 
 /* ---------- state ---------- */
-const state = { zone:'all', localityZone:'all', type:'all', band:'', ready:false };
+const state = { zone:'all', localityZone:'all', type:'all', band:'', ready:false, keyword:'' };
 let shortlist = [];
 try {
   const raw = JSON.parse(localStorage.getItem('mh_shortlist') || '[]');
@@ -2627,15 +2693,22 @@ function stageChip(stage){
   return { cls:'chip--info', label: stage };
 }
 function renderProjects(){
+  const kw = state.keyword;
   const list = PROJECTS.filter(p => {
     const l = loc(p.locality);
+    const b = bld(p.builder);
     // the corridor filter must match its own label: "West — Gachibowli, Kokapet,
     // Narsingi, Kondapur" must not quietly include central localities like Manikonda
     const zoneOk = state.zone === 'all' || l.zone === state.zone;
     const typeOk = state.type === 'all' || p.type === state.type;
     const bandOk = !state.band || p.band === state.band;
     const readyOk = !state.ready || /Ready|Immediate/i.test(p.stage);
-    return zoneOk && typeOk && bandOk && readyOk;
+    const kwOk = !kw ||
+      p.name.toLowerCase().includes(kw) ||
+      (b && b.name.toLowerCase().includes(kw)) ||
+      (l && l.name.toLowerCase().includes(kw)) ||
+      (p.tagline||'').toLowerCase().includes(kw);
+    return zoneOk && typeOk && bandOk && readyOk && kwOk;
   });
 
   $('#projectGrid').innerHTML = list.map((p, i) => {
@@ -2779,9 +2852,14 @@ function bindFilters(){
     state.zone = $('#fLocality').value || 'all';
     state.type = $('#fType').value || 'all';
     state.band = $('#fBudget').value; state.ready = false;
+    state.keyword = $('#fKeyword').value.trim().toLowerCase();
     $$('[data-ptype]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptype === state.type)));
     renderProjects();
     goTo('#projects');
+  });
+  $('#fKeyword').addEventListener('input', () => {
+    state.keyword = $('#fKeyword').value.trim().toLowerCase();
+    renderProjects();
   });
   $$('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
     const q = btn.dataset.quick;
@@ -2795,7 +2873,8 @@ function bindFilters(){
     goTo('#projects');
   }));
   $('#resetProjects').addEventListener('click', () => {
-    state.zone='all'; state.type='all'; state.band=''; state.ready=false;
+    state.zone='all'; state.type='all'; state.band=''; state.ready=false; state.keyword='';
+    $('#fKeyword').value = '';
     syncFilterUI(); renderProjects();
     $$('[data-ptype]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptype === 'all')));
   });
@@ -3423,6 +3502,16 @@ function initHeader(){
       }
     });
   });
+
+  // dark mode toggle
+  const themeBtn = $('#themeToggle');
+  const savedTheme = localStorage.getItem('mh_theme');
+  if (savedTheme === 'dark') document.body.classList.add('dark-theme');
+  themeBtn.addEventListener('click', () => {
+    const on = document.body.classList.toggle('dark-theme');
+    themeBtn.setAttribute('aria-pressed', String(on));
+    localStorage.setItem('mh_theme', on ? 'dark' : 'light');
+  });
 }
 
 /* Visit buttons anywhere */
@@ -3446,6 +3535,75 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============================================================
+   SCHEMA.ORG STRUCTURED DATA
+   ============================================================ */
+function injectStructuredData(){
+  const localitySchemas = LOCALITIES.map(l => ({
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "name": l.name,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": l.name,
+      "addressRegion": "Hyderabad",
+      "addressCountry": "IN"
+    }
+  }));
+  const projectSchemas = PROJECTS.map(p => {
+    const l = loc(p.locality);
+    const b = bld(p.builder);
+    return {
+      "@context": "https://schema.org",
+      "@type": "RealEstateListing",
+      "name": p.name,
+      "description": (p.tagline||'') + '. ' + (p.read&&p.read[0]||''),
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": l ? l.name : '',
+        "addressRegion": "Hyderabad",
+        "addressCountry": "IN"
+      },
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": p.from || 0,
+        "priceCurrency": "INR",
+        "referenceQuantity": {
+          "@type": "QuantitativeValue",
+          "value": 1,
+          "unitCode": "SQFT"
+        }
+      },
+      "numberOfRooms": p.units ? p.units.length : null,
+      "yearBuilt": null,
+      "amenityFeature": p.amenities || [],
+      "isRentedOrSold": "forSale",
+      "offeredBy": b ? {
+        "@type": "Organization",
+        "name": b.name
+      } : undefined
+    };
+  });
+  const builderSchemas = BUILDERS.map(b => ({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": b.name,
+    "description": b.tagline || '',
+    "foundingDate": String(b.founded),
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": b.hq,
+      "addressCountry": "IN"
+    }
+  }));
+  [].concat(localitySchemas, projectSchemas, builderSchemas).forEach(schema => {
+    const el = document.createElement('script');
+    el.type = 'application/ld+json';
+    el.textContent = JSON.stringify(schema);
+    document.head.appendChild(el);
+  });
+}
+
+/* ============================================================
    BOOT
    ============================================================ */
 renderTicker();
@@ -3454,6 +3612,7 @@ renderBuilders();
 renderProjects();
 renderInsights();
 renderFaq();
+injectStructuredData();
 bindFilters();
 initVisitForm();
 initCalc();
