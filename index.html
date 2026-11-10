@@ -877,6 +877,21 @@ body.has-shortbar .wa{bottom:88px}
   .brand__name{font-size:.94rem}
 }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  #localityMap{width:100%;height:420px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);background:#eef2f2}
+  .leaflet-popup-content-wrapper{font-family:var(--font-sans);font-size:.82rem}
+  .leaflet-popup-content h4{margin:0 0 .4rem;font-size:.95rem;color:var(--ink)}
+  .leaflet-popup-content p{margin:0 0 .3rem;font-size:.78rem;color:var(--muted);line-height:1.4}
+  .leaflet-popup-content .meta{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.4rem}
+  .leaflet-popup-content .meta span{font-size:.72rem;background:rgba(169,116,31,.1);color:#8A5C14;padding:.15rem .4rem;border-radius:12px}
+  .leaflet-popup-content .open{margin-top:.5rem;display:block;font-size:.78rem;color:var(--gold);font-weight:600;text-decoration:none}
+  .leaflet-popup-content .open:hover{text-decoration:underline}
+  .map-legend{margin-top:.75rem;display:flex;gap:.6rem;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+  .map-legend span{display:flex;align-items:center;gap:.3rem}
+  .map-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+</style>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 </head>
 <body>
@@ -1037,6 +1052,11 @@ body.has-shortbar .wa{bottom:88px}
           <span class="field__label" style="display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin-bottom:.35rem">Keyword search</span>
           <input type="text" class="control" id="fKeyword" placeholder="Search project, builder or locality…" style="width:100%">
         </label>
+        <label class="field" style="flex:1;margin-top:.8rem">
+          <span class="field__label" style="display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);margin-bottom:.35rem">AI search — describe your home</span>
+          <input type="text" class="control" id="fAI" placeholder="e.g. 3BHK in Kokapet under 3 Cr with play area" style="width:100%">
+          <div id="aiParsed" style="margin-top:.35rem;font-size:.75rem;color:var(--muted);display:none"></div>
+        </label>
         <span>Popular right now:</span>
         <button type="button" class="quick-chip" data-quick="kokapet">Kokapet &lt; &#8377;2 Cr</button>
         <button type="button" class="quick-chip" data-quick="ready">Ready to move</button>
@@ -1091,7 +1111,11 @@ body.has-shortbar .wa{bottom:88px}
       </div>
     </div>
     <div class="map-wrap">
-      <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=78.3000%2C17.2500%2C78.6500%2C17.6000&amp;layer=mapnik" style="width:100%;height:420px;border:0;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);" allowfullscreen></iframe>
+      <div id="localityMap"></div>
+      <div class="map-legend">
+        <span><span class="map-dot" style="background:var(--gold)"></span>Micro-market marker</span>
+        <span>Tap any marker for rates, demand, supply and our take</span>
+      </div>
     </div>
   </div>
 </section>
@@ -1134,6 +1158,17 @@ body.has-shortbar .wa{bottom:88px}
           <button role="tab" aria-selected="false" data-ptype="flat">Flats</button>
           <button role="tab" aria-selected="false" data-ptype="villa">Villas</button>
           <button role="tab" aria-selected="false" data-ptype="plot">Plots</button>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Lifestyle filter" style="margin-top:.6rem">
+          <span style="font-size:.7rem;color:var(--muted-2);margin-right:.4rem">Lifestyle:</span>
+          <button role="tab" aria-selected="true" data-lifestyle="all">All</button>
+          <button role="tab" aria-selected="false" data-lifestyle="couple">Couple</button>
+          <button role="tab" aria-selected="false" data-lifestyle="kids">Kids</button>
+          <button role="tab" aria-selected="false" data-lifestyle="pet-friendly">Pet Friendly</button>
+          <button role="tab" aria-selected="false" data-lifestyle="vaasthu">100% Vaasthu</button>
+          <button role="tab" aria-selected="false" data-lifestyle="solar-power">Solar Power</button>
+          <button role="tab" aria-selected="false" data-lifestyle="professional">Professional</button>
+          <button role="tab" aria-selected="false" data-lifestyle="nri">NRI Investment</button>
         </div>
       </div>
     </div>
@@ -1471,6 +1506,60 @@ body.has-shortbar .wa{bottom:88px}
     </div>
   </div>
 </div>
+
+<!-- ========== NRI SECTION ========== -->
+<section class="section" id="nri">
+  <div class="wrap" style="max-width:1000px">
+    <div class="sec-head reveal" style="margin-bottom:2rem">
+      <div class="sec-head__copy">
+        <span class="eyebrow">NRI buyer desk</span>
+        <h2>Buying Hyderabad real estate<br><span class="gold">from outside India.</span></h2>
+        <p class="lede">FEMA rules, repatriation, power of attorney and TDS — explained for NRI buyers without the sales pitch.</p>
+      </div>
+    </div>
+    <div class="grid grid--3">
+      <article class="card reveal">
+        <div class="card__body">
+          <h3 class="h3">FEMA &amp; ownership rules</h3>
+          <p>NRIs can buy residential and commercial property in India without RBI approval. Agricultural land, plantation property and farmhouses are restricted. No limit on the number of properties you can hold.</p>
+        </div>
+      </article>
+      <article class="card reveal">
+        <div class="card__body">
+          <h3 class="h3">Funding the purchase</h3>
+          <p>Payments must come through NRE/NRO accounts or inward remittance via normal banking channels. Cash transactions above ₹2 lakh are prohibited. Home loans are available to NRIs from Indian banks with stricter documentation.</p>
+        </div>
+      </article>
+      <article class="card reveal">
+        <div class="card__body">
+          <h3 class="h3">Power of attorney</h3>
+          <p>If you cannot travel for registration, execute a power of attorney (PoA) notarised and attested at the Indian embassy. The PoA holder can sign the agreement and complete registration on your behalf.</p>
+        </div>
+      </article>
+      <article class="card reveal">
+        <div class="card__body">
+          <h3 class="h3">Repatriation of funds</h3>
+          <p>Sale proceeds can be repatriated up to USD 1 million per financial year from NRO accounts. NRE account funds are fully repatriable. Capital gains tax applies — LTCG at 20% with indexation after 2 years.</p>
+        </div>
+      </article>
+      <article class="card reveal">
+        <div class="card__body">
+          <h3 class="h3">TDS on sale</h3>
+          <p>When an NRI sells property, the buyer deducts TDS at 20%+ (long-term) or 30%+ (short-term) before payment. File a tax return to claim a refund if your actual liability is lower.</p>
+        </div>
+      </article>
+      <article class="card reveal">
+        <div class="card__body">
+          <h3 class="h3">NRI-friendly projects</h3>
+          <p>Projects with clear title, ready possession and established resale markets suit NRI buyers best. Airview Plots (airport-adjacent land) and Skyline Residency (ready, Gachibowli) are our NRI-screened picks.</p>
+        </div>
+      </article>
+    </div>
+    <div style="margin-top:2rem;border-top:1px solid var(--line);padding-top:1.5rem">
+      <p style="color:var(--muted);font-size:.85rem">This is general information, not legal or tax advice. Consult a qualified chartered accountant and a property lawyer before remitting funds or signing any agreement.</p>
+    </div>
+  </div>
+</section>
 
 <!-- ========== FAQ ========== -->
 <section class="section section--paper" id="faq">
@@ -2254,7 +2343,8 @@ const PROJECTS = [
     ],
     facts:[['Project type','Apartment, 3 towers'],['Possession','Ready — OC issued'],['TSRERA','P02400000123'],['Metro','500 m walk'],['Payment plan','Construction-linked'],['Density','4 units / floor']],
     unitsAvailable:12,
-    similar:['vista','heritage','greenview','bellevue']
+    similar:['vista','heritage','greenview','bellevue'],
+    lifestyle:['couple','kids','professional','vaasthu']
   },
   {
     id:'vista', name:'Vista Towers', short:'Vista', builder:'myhome', locality:'kokapet',
@@ -2306,7 +2396,8 @@ const PROJECTS = [
     ],
     facts:[['Project type','Apartment, 2 towers'],['Possession','Dec 2027 (committed)'],['TSRERA','P02400000145'],['Metro','Planned corridor'],['Payment plan','Construction-linked'],['Density','5 units / floor']],
     unitsAvailable:8,
-    similar:['skyline','sunrise','greenview','bellevue']
+    similar:['skyline','sunrise','greenview','bellevue'],
+    lifestyle:['couple','kids','pet-friendly','professional']
   },
   {
     id:'greenview', name:'Greenview Villas', short:'Greenview', builder:'dsr', locality:'narsingi',
@@ -2358,7 +2449,8 @@ const PROJECTS = [
     ],
     facts:[['Project type','Independent villas'],['Possession','Ready — phase 1 & 2'],['TSRERA','P02400000167'],['Metro','No — ORR access'],['Payment plan','Milestone-linked'],['Density','52 villas total']],
     unitsAvailable:4,
-    similar:['skyline','airview','heritage','bellevue']
+    similar:['skyline','airview','heritage','bellevue'],
+    lifestyle:['couple','kids','pet-friendly','vaasthu']
   },
   {
     id:'heritage', name:'Heritage Apartments', short:'Heritage', builder:'aparna', locality:'manikonda',
@@ -2408,7 +2500,8 @@ const PROJECTS = [
     ],
     facts:[['Project type','Apartment, resale'],['Possession','Immediate'],['TSRERA','P02400000189'],['Metro','1.2 km'],['Payment plan','Lump sum / home loan'],['Density','3 units / floor']],
     unitsAvailable:6,
-    similar:['sunrise','skyline','vista']
+    similar:['sunrise','skyline','vista'],
+    lifestyle:['couple','vaasthu','professional']
   },
   {
     id:'sunrise', name:'Sunrise Township', short:'Sunrise', builder:'ramky', locality:'bachupally',
@@ -2460,7 +2553,8 @@ const PROJECTS = [
     ],
     facts:[['Project type','Apartment, township'],['Possession','Mar 2028 (committed)'],['TSRERA','P02400000201'],['Metro','Planned corridor'],['Payment plan','Construction-linked'],['Density','6 units / floor']],
     unitsAvailable:15,
-    similar:['heritage','vista','skyline']
+    similar:['heritage','vista','skyline'],
+    lifestyle:['couple','kids','pet-friendly','solar-power','vaasthu']
   },
   {
     id:'airview', name:'Airview Plots', short:'Airview', builder:'sumadhura', locality:'shamshabad',
@@ -2510,7 +2604,8 @@ const PROJECTS = [
     ],
     facts:[['Asset type','Residential plot'],['Possession','Immediate — registration'],['Approval','DTCP layout'],['Metro','None today'],['Payment plan','Lump sum'],['Plot sizes','200–330 sq yd']],
     unitsAvailable:22,
-    similar:['greenview','sunrise','heritage']
+    similar:['greenview','sunrise','heritage'],
+    lifestyle:['nri','vaasthu']
   },
   {
     id:'bellevue', name:'Bellevue Residences', short:'Bellevue', builder:'sumadhura', locality:'kondapur',
@@ -2562,7 +2657,8 @@ const PROJECTS = [
     ],
     facts:[['Project type','Apartment, boutique'],['Possession','Sep 2027 (committed)'],['TSRERA','P02400000218'],['Metro','900 m walk'],['Payment plan','Construction-linked'],['Density','2 units / floor']],
     unitsAvailable:2,
-    similar:['greenview','skyline','vista']
+    similar:['greenview','skyline','vista'],
+    lifestyle:['couple','professional','vaasthu']
   }
 ];
 
@@ -2638,7 +2734,7 @@ function toast(msg){
 }
 
 /* ---------- state ---------- */
-const state = { zone:'all', localityZone:'all', type:'all', band:'', ready:false, keyword:'' };
+const state = { zone:'all', localityZone:'all', type:'all', band:'', ready:false, keyword:'', aiQuery:'', lifestyle:'all' };
 let shortlist = [];
 try {
   const raw = JSON.parse(localStorage.getItem('mh_shortlist') || '[]');
@@ -2701,6 +2797,41 @@ function renderLocalities(){
 /* ============================================================
    RENDER: LOCALITY MAP
    ============================================================ */
+function renderLocalityMap(){
+  const mapEl = $('#localityMap');
+  if (!mapEl) return;
+  const coords = {
+    gachibowli:[17.4481,78.3489], kokapet:[17.4031,78.3333], narsingi:[17.4210,78.3354],
+    manikonda:[17.4298,78.3915], kondapur:[17.4670,78.3680], bachupally:[17.5534,78.4037],
+    miyapur:[17.5267,78.4235], shamshabad:[17.2426,78.3945]
+  };
+  const map = L.map('localityMap', {scrollWheelZoom:false, zoomControl:false}).setView([17.42,78.37], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap contributors',
+    maxZoom:18
+  }).addTo(map);
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  LOCALITIES.forEach(l => {
+    const c = coords[l.id];
+    if (!c) return;
+    const marker = L.marker(c).addTo(map);
+    const px = `₹${l.pxLow.toLocaleString('en-IN')}–${l.pxHigh.toLocaleString('en-IN')}/${esc(l.unit)}`;
+    marker.bindPopup(`
+      <div style="min-width:220px">
+        <h4>${esc(l.name)}</h4>
+        <p>${esc(l.tagline)}</p>
+        <div class="meta">
+          <span>${px}</span>
+          <span>Demand: ${esc(l.demand)}</span>
+          <span>Yield: ${esc(l.yield)}</span>
+          <span>${l.projects} projects</span>
+        </div>
+        <a class="open" href="#projects?locality=${l.id}">Read locality note →</a>
+      </div>
+    `);
+  });
+}
+
 /* ============================================================
    RENDER: BUILDERS
    ============================================================ */
@@ -2741,6 +2872,66 @@ function renderBuilders(){
 /* ============================================================
    RENDER: PROJECTS
    ============================================================ */
+/* ============================================================
+   AI NATURAL LANGUAGE SEARCH PARSER
+   ============================================================ */
+function parseAIQuery(q){
+  const query = q.toLowerCase().trim();
+  if (!query) return { bhk:null, locality:null, maxPrice:null, amenities:[] };
+  const result = { bhk:null, locality:null, maxPrice:null, amenities:[] };
+
+  // BHK extraction: "3BHK", "3 BHK", "3bhk", "3 bedroom", "3 bed"
+  const bhkMatch = query.match(/(\d+)\s*(bhk|bedroom|bed)\b/);
+  if (bhkMatch) result.bhk = +bhkMatch[1];
+
+  // Locality extraction: match known locality names
+  const knownLocs = ['kokapet','gachibowli','narsingi','manikonda','kondapur','madhapur','bachupally','nizampet','miyapur','shamshabad','rajendranagar','financial district','hitec city','or r'];
+  for (const loc of knownLocs) {
+    if (query.includes(loc)) {
+      // Map to our locality IDs
+      const locMap = {
+        'kokapet':'kokapet','gachibowli':'gachibowli','financial district':'gachibowli','narsingi':'narsingi',
+        'manikonda':'manikonda','kondapur':'kondapur','madhapur':'kondapur','bachupally':'bachupally',
+        'nizampet':'bachupally','miyapur':'miyapur','shamshabad':'shamshabad','rajendranagar':'shamshabad',
+        'hitec city':'kondapur','or r':'kokapet'
+      };
+      result.locality = locMap[loc];
+      break;
+    }
+  }
+
+  // Budget extraction: "under 3 Cr", "under 3cr", "below 1.5 Cr", "max 2 Cr", "₹3 Cr"
+  const budgetMatch = query.match(/(?:under|below|max|maximum|₹|rs|inr)?\s*(\d+(?:\.\d+)?)\s*(cr|l|lakh|lakhs)?/);
+  if (budgetMatch) {
+    const val = +budgetMatch[1];
+    const unit = budgetMatch[2] || 'cr';
+    result.maxPrice = unit === 'l' || unit === 'lakh' || unit === 'lakhs' ? val * 100000 : val * 10000000;
+  }
+
+  // Amenities extraction
+  const amenityMap = {
+    'play area':"Kids' play area", 'playarea':"Kids' play area", 'playground':"Kids' play area",
+    'pool':'Swimming pool', 'swimming pool':'Swimming pool',
+    'gym':'Gymnasium', 'gymnasium':'Gymnasium',
+    'parking':'Visitor parking', 'car parking':'Visitor parking',
+    'metro':'Metro', 'ev charging':'EV charging',
+    'vaasthu':'Vaasthu', 'vastu':'Vaasthu',
+    'solar':'Solar Power', 'solar power':'Solar Power',
+    'pet':'Pet Friendly', 'pet friendly':'Pet Friendly',
+    'kids':"Kids' play area", 'children':"Kids' play area",
+    'co-working':'Co-working lounge', 'coworking':'Co-working lounge',
+    'security':'24×7 security', 'power backup':'Power backup',
+    'rainwater':'Rainwater harvesting', 'yoga':'Yoga deck'
+  };
+  for (const [key, val] of Object.entries(amenityMap)) {
+    if (query.includes(key) && !result.amenities.includes(val)) {
+      result.amenities.push(val);
+    }
+  }
+
+  return result;
+}
+
 function stageChip(stage){
   if (/Ready|Immediate/i.test(stage)) return { cls:'chip--ok', label: stage };
   if (/Pre-launch/i.test(stage)) return { cls:'chip--warn', label: stage };
@@ -2748,6 +2939,7 @@ function stageChip(stage){
 }
 function renderProjects(){
   const kw = state.keyword;
+  const ai = state.aiQuery ? parseAIQuery(state.aiQuery) : null;
   const list = PROJECTS.filter(p => {
     const l = loc(p.locality);
     const b = bld(p.builder);
@@ -2762,7 +2954,24 @@ function renderProjects(){
       (b && b.name.toLowerCase().includes(kw)) ||
       (l && l.name.toLowerCase().includes(kw)) ||
       (p.tagline||'').toLowerCase().includes(kw);
-    return zoneOk && typeOk && bandOk && readyOk && kwOk;
+    // AI natural language filters
+    let aiOk = true;
+    if (ai) {
+      if (ai.bhk && !/\b\d+\s*bhk\b/i.test((p.units||[]).map(u=>u[0]).join(' '))) {
+        // check if any unit matches the BHK
+        const hasBhk = (p.units||[]).some(u => new RegExp(`\\b${ai.bhk}\\s*bhk\\b`, 'i').test(u[0]));
+        if (!hasBhk) aiOk = false;
+      }
+      if (ai.locality && p.locality !== ai.locality) aiOk = false;
+      if (ai.maxPrice && p.from > ai.maxPrice) aiOk = false;
+      if (ai.amenities.length && !ai.amenities.every(a => (p.amenities||[]).includes(a))) aiOk = false;
+    }
+    // Lifestyle filter
+    let lifeOk = true;
+    if (state.lifestyle && state.lifestyle !== 'all') {
+      if (!(p.lifestyle||[]).includes(state.lifestyle)) lifeOk = false;
+    }
+    return zoneOk && typeOk && bandOk && readyOk && kwOk && aiOk && lifeOk;
   });
 
   $('#projectGrid').innerHTML = list.map((p, i) => {
@@ -2889,6 +3098,7 @@ function syncFilterUI(){
   $('#fLocality').value = state.localityZone === 'all' ? '' : state.localityZone;
   $('#fType').value = state.type === 'all' ? '' : state.type;
   $('#fBudget').value = state.band || '';
+  $$('[data-lifestyle]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lifestyle === state.lifestyle)));
 }
 function bindFilters(){
   $$('[data-lzone]').forEach(btn => btn.addEventListener('click', () => {
@@ -2900,6 +3110,11 @@ function bindFilters(){
     state.zone = 'all'; state.localityZone = 'all'; state.band = ''; state.ready = false;
     state.type = btn.dataset.ptype;
     $$('[data-ptype]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptype === state.type)));
+    renderProjects();
+  }));
+  $$('[data-lifestyle]').forEach(btn => btn.addEventListener('click', () => {
+    state.lifestyle = btn.dataset.lifestyle;
+    $$('[data-lifestyle]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lifestyle === state.lifestyle)));
     renderProjects();
   }));
   $('#searchForm').addEventListener('submit', e => {
@@ -2916,6 +3131,20 @@ function bindFilters(){
     state.keyword = $('#fKeyword').value.trim().toLowerCase();
     renderProjects();
   });
+  $('#fAI').addEventListener('input', () => {
+    state.aiQuery = $('#fAI').value.trim();
+    const ai = state.aiQuery ? parseAIQuery(state.aiQuery) : null;
+    const parsed = $('#aiParsed');
+    if (!state.aiQuery) { parsed.style.display = 'none'; renderProjects(); return; }
+    const parts = [];
+    if (ai.bhk) parts.push(`${ai.bhk}BHK`);
+    if (ai.locality) parts.push(ai.locality.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\b\w/g, c => c.toUpperCase()));
+    if (ai.maxPrice) parts.push(`under ₹${(ai.maxPrice/10000000).toFixed(2)} Cr`);
+    if (ai.amenities.length) parts.push(ai.amenities.join(', '));
+    parsed.textContent = 'Looking for: ' + parts.join(', ');
+    parsed.style.display = 'block';
+    renderProjects();
+  });
   $$('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
     const q = btn.dataset.quick;
     state.zone = 'all'; state.type = 'all'; state.band = ''; state.ready = false;
@@ -2928,10 +3157,12 @@ function bindFilters(){
     goTo('#projects');
   }));
   $('#resetProjects').addEventListener('click', () => {
-    state.zone='all'; state.type='all'; state.band=''; state.ready=false; state.keyword='';
-    $('#fKeyword').value = '';
+    state.zone='all'; state.type='all'; state.band=''; state.ready=false; state.keyword=''; state.aiQuery=''; state.lifestyle='all';
+    $('#fKeyword').value = ''; $('#fAI').value = '';
+    $('#aiParsed').style.display = 'none';
     syncFilterUI(); renderProjects();
     $$('[data-ptype]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptype === 'all')));
+    $$('[data-lifestyle]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lifestyle === 'all')));
   });
 }
 
@@ -3716,6 +3947,7 @@ function injectStructuredData(){
    ============================================================ */
 renderTicker();
 renderLocalities();
+renderLocalityMap();
 renderBuilders();
 renderProjects();
 renderInsights();
