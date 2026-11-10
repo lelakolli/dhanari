@@ -800,7 +800,7 @@ body.has-shortbar .wa{bottom:88px}
   .brand__name{font-size:.94rem}
 }
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -1003,7 +1003,7 @@ body.has-shortbar .wa{bottom:88px}
       </div>
     </div>
     <div class="map-wrap">
-      <div id="localityMapCanvas" style="height:420px;width:100%;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)"></div>
+      <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=78.3000%2C17.2500%2C78.6500%2C17.6000&amp;layer=mapnik" style="width:100%;height:420px;border:0;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);" allowfullscreen></iframe>
     </div>
   </div>
 </section>
@@ -1958,18 +1958,6 @@ const LOCALITIES = [
   }
 ];
 
-const LOCALITY_COORDS = {
-  gachibowli:[17.4464,78.3476],
-  kokapet:[17.4129,78.3423],
-  narsingi:[17.4244,78.3690],
-  manikonda:[17.4319,78.3968],
-  kondapur:[17.4639,78.3631],
-  bachupally:[17.5222,78.4067],
-  miyapur:[17.5132,78.4026],
-  shamshabad:[17.2449,78.4102],
-  rajendranagar:[17.3268,78.4788]
-};
-
 const BUILDERS = [
   {
     id:'prestige', name:'Prestige Group', mono:'PG', img:IMG.skyline,
@@ -2593,46 +2581,6 @@ function renderLocalities(){
 /* ============================================================
    RENDER: LOCALITY MAP
    ============================================================ */
-let localityMap = null;
-function renderLocalityMap(){
-  try {
-    const canvas = $('#localityMapCanvas');
-    if (!canvas) return;
-    if (localityMap) {
-      localityMap.remove();
-      localityMap = null;
-      canvas.innerHTML = '';
-    }
-    localityMap = L.map(canvas, { scrollWheelZoom:false }).setView([17.42,78.47], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:'© OpenStreetMap contributors',
-      maxZoom:18
-    }).addTo(localityMap);
-    LOCALITIES.forEach(l => {
-      const c = LOCALITY_COORDS[l.id];
-      if (!c) return;
-      const marker = L.marker(c).addTo(localityMap);
-      const inrLow = '₹' + l.pxLow.toLocaleString('en-IN');
-      const inrHigh = '₹' + l.pxHigh.toLocaleString('en-IN');
-      marker.bindPopup(`
-        <div style="font-family:var(--sans);font-size:.82rem;line-height:1.4;min-width:220px">
-          <div style="font-weight:700;color:var(--ink);font-size:.95rem;margin-bottom:.25rem">${esc(l.name)}</div>
-          <div style="color:var(--muted);font-size:.72rem;margin-bottom:.4rem">${esc(l.zoneLabel)} · ${esc(l.trend)} trend</div>
-          <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:.4rem">
-            <span>${inrLow} – ${inrHigh} / ${esc(l.unit)}</span>
-            <span style="font-weight:700">${l.yield} yield</span>
-          </div>
-          <div style="font-size:.72rem;color:var(--muted);max-height:80px;overflow:hidden">${esc(l.tagline)}</div>
-        </div>
-      `);
-    });
-  } catch(e){
-    console.warn('Map could not load:', e);
-    const canvas = $('#localityMapCanvas');
-    if(canvas) canvas.innerHTML = '<p style="padding:2rem;color:var(--muted);text-align:center">Map unavailable (' + esc(String(e).slice(0,60)) + ') — tap any locality card above to read its notes.</p>';
-  }
-}
-
 /* ============================================================
    RENDER: BUILDERS
    ============================================================ */
@@ -3521,7 +3469,5 @@ observeReveals();
 
 })();
 </script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script>renderLocalityMap();</script>
 </body>
 </html>
