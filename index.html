@@ -2629,7 +2629,7 @@ function renderLocalityMap(){
   } catch(e){
     console.warn('Map could not load:', e);
     const canvas = $('#localityMapCanvas');
-    if(canvas) canvas.innerHTML = '<p style="padding:2rem;color:var(--muted);text-align:center">Map unavailable — tap any locality card above to read its notes.</p>';
+    if(canvas) canvas.innerHTML = '<p style="padding:2rem;color:var(--muted);text-align:center">Map unavailable (' + esc(String(e).slice(0,60)) + ') — tap any locality card above to read its notes.</p>';
   }
 }
 
