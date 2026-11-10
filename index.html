@@ -3450,7 +3450,6 @@ function initVisitForm(){
     const p = prj(project);
     const conf = $('#visitConfirm');
     $('#visitConfirmText').textContent = `${name.split(' ')[0]}, your visit to ${p.name} is pencilled in for ${day.split(' ').slice(0,3).join(' ')} at ${slot}. A consultant will call ${phone.slice(0,2)}•••••${phone.slice(-3)} within 4 working hours to confirm.`;
-    const p = prj(project);
     localStorage.setItem('mh_visit_deadline', String(Date.now() + 86400000));
     deadline = Date.now() + 86400000;
     countdownText.textContent = 'Consultant responds within 24h · fresh window started';
