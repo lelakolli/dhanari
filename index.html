@@ -291,6 +291,8 @@ body.no-scroll{overflow:hidden}
 .p-card__price{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-top:auto;padding-top:.85rem;border-top:1px solid var(--line)}
 .p-card__price .amt{font-family:var(--serif);font-size:1.36rem;letter-spacing:-.03em;color:var(--ink);line-height:1}
 .p-card__price .per{font-size:.72rem;color:var(--muted);display:block;margin-top:.3rem;font-weight:600;letter-spacing:.02em}
+.scarcity{display:inline-flex;align-items:center;gap:.3rem;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:.28rem .6rem;border-radius:var(--r-pill);background:rgba(169,116,31,.1);color:#8A5C14;border:1px solid rgba(169,116,31,.25)}
+.scarcity::before{content:"";width:6px;height:6px;border-radius:50%;background:#A9741F;display:inline-block}
 .p-card__go{
   width:38px;height:38px;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;
   background:transparent;transition:background .4s,color .4s,border-color .4s,transform .4s var(--ease);flex:none
@@ -719,6 +721,22 @@ body.has-shortbar .wa{bottom:88px}
 .modal__close{width:38px;height:38px;border-radius:50%;border:1px solid var(--line-strong);background:transparent;display:grid;place-items:center;flex:none;transition:.3s}
 .modal__close:hover{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
 .modal__close svg{width:14px;height:14px}
+/* gated cost-sheet modal */
+.cost-modal{display:none;position:fixed;inset:0;z-index:990;background:rgba(6,13,11,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.cost-modal.open{display:flex;align-items:center;justify-content:center;animation:fadeIn .35s var(--ease) both}
+.cost-modal__card{background:var(--ivory);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:min(480px,92vw);max-height:90vh;overflow:auto;animation:panelIn .5s var(--ease-out) both;border:1px solid var(--line-strong)}
+.cost-modal__head{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.cost-modal__head h2{font-size:1.4rem;letter-spacing:-.02em}
+.cost-modal__close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line-strong);background:transparent;display:grid;place-items:center;transition:.3s}
+.cost-modal__close:hover{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
+.cost-modal__body{padding:1.5rem}
+.cost-modal__note{font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:1.5rem}
+.cost-modal__form{display:flex;flex-direction:column;gap:1rem}
+.cost-modal__input{width:100%;padding:.9rem 1rem;border:1px solid var(--line);border-radius:var(--r-md);background:var(--paper);font-size:.9rem;font-family:inherit}
+.cost-modal__input:focus{outline:2px solid var(--gold-deep);outline-offset:2px;border-color:transparent}
+.cost-modal__submit{width:100%;padding:1rem;border:none;border-radius:var(--r-md);background:linear-gradient(100deg,#D7B678,#C9A45C 45%,#B08C46);color:#20190A;font-weight:800;font-size:.95rem;cursor:pointer;transition:.4s}
+.cost-modal__submit:hover{box-shadow:var(--shadow-gold)}
+.cost-modal__disclaimer{font-size:.72rem;color:var(--muted-2);line-height:1.5;margin-top:1.2rem;border-top:1px solid var(--line);padding-top:1rem}
 /* compare table */
 .cmp-table{width:100%;font-size:.84rem;border-collapse:separate;border-spacing:0;min-width:620px}
 .cmp-table th,.cmp-table td{padding:.82rem .9rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
@@ -943,7 +961,11 @@ body.has-shortbar .wa{bottom:88px}
         or pay a single rupee in booking advance.
       </p>
       <div class="hero__cta">
-        <a href="#projects" class="btn btn--gold">
+        <button class="btn btn--gold" id="costSheetBtn">
+          What ₹1.5 Cr actually costs
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </button>
+        <a href="#projects" class="btn btn--ghost-light">
           Explore verified projects
           <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
         </a>
@@ -1185,6 +1207,27 @@ body.has-shortbar .wa{bottom:88px}
   </div>
 </div>
 
+<!-- Gated cost-sheet modal -->
+<div class="cost-modal" id="costModal">
+  <div class="cost-modal__card">
+    <div class="cost-modal__head">
+      <h2>What ₹1.5 Cr actually costs</h2>
+      <button class="cost-modal__close" id="costModalClose" aria-label="Close">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="cost-modal__body">
+      <p class="cost-modal__note">Get the full cost sheet: stamp duty, registration, corpus, parking, GST and the first five years of interest — for a representative ₹1.5 Cr flat in Kokapet.</p>
+      <form id="costModalForm" class="cost-modal__form">
+        <input type="text" class="cost-modal__input" id="costName" placeholder="Full name" required autocomplete="name">
+        <input type="tel" class="cost-modal__input" id="costMobile" placeholder="Mobile number" required autocomplete="tel" pattern="[0-9]{10}">
+        <button type="submit" class="cost-modal__submit">Send me the cost sheet</button>
+      </form>
+      <p class="cost-modal__disclaimer">Figures are illustrative and not an offer. Commission, if any, is disclosed in writing per project before you book. We never charge buyers a fee.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ========== CALCULATOR ========== -->
 <section class="section" id="calculator">
   <div class="wrap">
@@ -1306,6 +1349,10 @@ body.has-shortbar .wa{bottom:88px}
         <div class="visit__steps" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
         <h3 class="h3" style="margin-bottom:.15rem">Request a guided visit</h3>
         <p style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">Takes under a minute. We never resell your number.</p>
+        <div class="countdown" id="visitCountdown" style="margin-bottom:1rem;padding:.8rem 1rem;background:rgba(169,116,31,.08);border:1px solid rgba(169,116,31,.2);border-radius:var(--r-md);font-size:.82rem;color:#8A5C14;display:flex;align-items:center;gap:.5rem">
+          <span style="width:12px;height:12px;border-radius:50%;background:#A9741F;display:inline-block"></span>
+          <span id="visitCountdownText">Consultant responds within 24 hours</span>
+        </div>
         <div class="form-grid">
           <div class="field">
             <label for="vName">Full name</label>
@@ -2206,6 +2253,7 @@ const PROJECTS = [
       ['Service charge estimate is unverified','Ask for the last two years of actual maintenance accounts from the residents’ association rather than the builder’s projection.']
     ],
     facts:[['Project type','Apartment, 3 towers'],['Possession','Ready — OC issued'],['TSRERA','P02400000123'],['Metro','500 m walk'],['Payment plan','Construction-linked'],['Density','4 units / floor']],
+    unitsAvailable:12,
     similar:['vista','heritage','greenview','bellevue']
   },
   {
@@ -2257,6 +2305,7 @@ const PROJECTS = [
       ['Metro is planned, not approved','Do not price in metro connectivity. The corridor is proposed, not sanctioned.']
     ],
     facts:[['Project type','Apartment, 2 towers'],['Possession','Dec 2027 (committed)'],['TSRERA','P02400000145'],['Metro','Planned corridor'],['Payment plan','Construction-linked'],['Density','5 units / floor']],
+    unitsAvailable:8,
     similar:['skyline','sunrise','greenview','bellevue']
   },
   {
@@ -2308,6 +2357,7 @@ const PROJECTS = [
       ['Maintenance corpus is underfunded','The association corpus is below one year of operating cost. Negotiate a contribution cap into your cost sheet.']
     ],
     facts:[['Project type','Independent villas'],['Possession','Ready — phase 1 & 2'],['TSRERA','P02400000167'],['Metro','No — ORR access'],['Payment plan','Milestone-linked'],['Density','52 villas total']],
+    unitsAvailable:4,
     similar:['skyline','airview','heritage','bellevue']
   },
   {
@@ -2357,6 +2407,7 @@ const PROJECTS = [
       ['Monsoon drainage on internal roads','Visit during or immediately after rain. Manikonda’s internal roads flood, and no brochure will tell you that.']
     ],
     facts:[['Project type','Apartment, resale'],['Possession','Immediate'],['TSRERA','P02400000189'],['Metro','1.2 km'],['Payment plan','Lump sum / home loan'],['Density','3 units / floor']],
+    unitsAvailable:6,
     similar:['sunrise','skyline','vista']
   },
   {
@@ -2408,6 +2459,7 @@ const PROJECTS = [
       ['Commute is 45–70 minutes','Do a real peak-hour drive to your workplace before booking. This is the single biggest regret north-corridor buyers report.']
     ],
     facts:[['Project type','Apartment, township'],['Possession','Mar 2028 (committed)'],['TSRERA','P02400000201'],['Metro','Planned corridor'],['Payment plan','Construction-linked'],['Density','6 units / floor']],
+    unitsAvailable:15,
     similar:['heritage','vista','skyline']
   },
   {
@@ -2457,6 +2509,7 @@ const PROJECTS = [
       ['Building a villa costs ₹45–60 lakh more','Factor the build cost, compound wall and borewell before you compare this to a flat purchase.']
     ],
     facts:[['Asset type','Residential plot'],['Possession','Immediate — registration'],['Approval','DTCP layout'],['Metro','None today'],['Payment plan','Lump sum'],['Plot sizes','200–330 sq yd']],
+    unitsAvailable:22,
     similar:['greenview','sunrise','heritage']
   },
   {
@@ -2508,6 +2561,7 @@ const PROJECTS = [
       ['Metro is close but the last stretch is unpaved','Walk the 900 m route at 9 am before you accept the connectivity claim.']
     ],
     facts:[['Project type','Apartment, boutique'],['Possession','Sep 2027 (committed)'],['TSRERA','P02400000218'],['Metro','900 m walk'],['Payment plan','Construction-linked'],['Density','2 units / floor']],
+    unitsAvailable:2,
     similar:['greenview','skyline','vista']
   }
 ];
@@ -2721,6 +2775,7 @@ function renderProjects(){
         <img src="${p.images[0]}" alt="${esc(p.name)} — ${esc(l.name)}" loading="lazy" width="1400" height="787">
         <div class="p-card__top">
           <span class="chip ${sc.cls}"><span class="chip__dot"></span>${esc(sc.label)}</span>
+          ${p.unitsAvailable && p.unitsAvailable < 10 ? `<span class="scarcity">Only ${p.unitsAvailable} units left</span>` : ''}
           <label class="cmp" title="Add to comparison">
             <input type="checkbox" class="cmp-input" data-cid="${p.id}" ${inList ? 'checked' : ''} aria-label="Add ${esc(p.name)} to comparison">
             <span class="cmp__box">${ICON.check}</span>
@@ -3042,6 +3097,34 @@ function restoreFocus(closed){
     document.body.focus();
   }
 }
+
+/* Gated cost-sheet modal */
+const costModal = $('#costModal');
+const costModalClose = $('#costModalClose');
+const costModalForm = $('#costModalForm');
+$('#costSheetBtn').addEventListener('click', () => {
+  costModal.classList.add('open');
+  document.body.classList.add('no-scroll');
+  $('#costName').focus();
+});
+costModalClose.addEventListener('click', () => {
+  costModal.classList.remove('open');
+  document.body.classList.remove('no-scroll');
+});
+costModal.addEventListener('click', e => {
+  if (e.target === costModal) { costModal.classList.remove('open'); document.body.classList.remove('no-scroll'); }
+});
+costModalForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#costName').value.trim();
+  const mobile = $('#costMobile').value.replace(/\D/g,'');
+  if (name.length < 2 || mobile.length < 10) {
+    toast('Please enter a valid name and 10-digit mobile number.');
+    return;
+  }
+  costModalForm.innerHTML = '<div style="text-align:center;padding:2rem"><div style="font-size:2rem;margin-bottom:.5rem">✓</div><h3 style="margin-bottom:.5rem">Thank you, ' + name.split(' ')[0] + '.</h3><p style="color:var(--muted);font-size:.9rem">Your cost sheet is on the way. A consultant will call ' + mobile.slice(0,2) + '•••••' + mobile.slice(-3) + ' within 4 working hours.</p></div>';
+  setTimeout(() => { costModal.classList.remove('open'); document.body.classList.remove('no-scroll'); }, 2500);
+});
 document.addEventListener('click', e => {
   const c = e.target.closest('[data-close-modal]');
   if (c) { const m = c.closest('.modal'); if (m) closeModal('#' + m.id); }
@@ -3309,6 +3392,28 @@ window.addEventListener('popstate', () => {
    VISIT FORM
    ============================================================ */
 function initVisitForm(){
+  /* 24-hour response countdown — persists via localStorage */
+  const countdownEl = $('#visitCountdown');
+  const countdownText = $('#visitCountdownText');
+  const now = Date.now();
+  const stored = localStorage.getItem('mh_visit_deadline');
+  let deadline = stored ? +stored : now + 86400000;
+  if (!stored) { localStorage.setItem('mh_visit_deadline', String(deadline)); }
+  const tick = () => {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      countdownText.textContent = 'Response window expired — request a fresh visit';
+      countdownEl.style.opacity = '.5';
+      return;
+    }
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    countdownText.textContent = `Consultant responds within ${h}h ${m}m ${s}s · window resets daily`;
+  };
+  tick();
+  const countdownTimer = setInterval(tick, 1000);
+
   const sel = $('#vProject');
   sel.innerHTML = '<option value="">Select a project</option>' +
     PROJECTS.map(p => `<option value="${p.id}">${esc(p.name)} — ${esc(loc(p.locality).name)}</option>`).join('');
@@ -3345,6 +3450,10 @@ function initVisitForm(){
     const p = prj(project);
     const conf = $('#visitConfirm');
     $('#visitConfirmText').textContent = `${name.split(' ')[0]}, your visit to ${p.name} is pencilled in for ${day.split(' ').slice(0,3).join(' ')} at ${slot}. A consultant will call ${phone.slice(0,2)}•••••${phone.slice(-3)} within 4 working hours to confirm.`;
+    const p = prj(project);
+    localStorage.setItem('mh_visit_deadline', String(Date.now() + 86400000));
+    deadline = Date.now() + 86400000;
+    countdownText.textContent = 'Consultant responds within 24h · fresh window started';
     conf.classList.add('show');
     $$('.visit__steps i').forEach(x => x.classList.add('on'));
     toast('Visit request recorded');
