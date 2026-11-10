@@ -457,6 +457,10 @@ select.control{
 .l-card__foot .arrow{transition:transform .4s var(--ease);display:inline-flex}
 .l-card:hover .l-card__foot .arrow{transform:translateX(4px);color:var(--gold-ink)}
 
+/* Locality map */
+.map-wrap{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#fff}
+#localityMap{margin-top:2rem}
+
 /* Builder rows */
 .b-row{
   display:grid;grid-template-columns:auto 1.4fr 1fr auto;gap:1.25rem;align-items:center;
@@ -796,6 +800,7 @@ body.has-shortbar .wa{bottom:88px}
   .brand__name{font-size:.94rem}
 }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJB4IIN+Gfy1xOC1NX+A4q8mM1BqH3yGgWv0Z4=" crossorigin="" />
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -984,6 +989,22 @@ body.has-shortbar .wa{bottom:88px}
       Price bands are indicative asking rates compiled from transaction registrations and primary sales desks between
       Jan&ndash;Sep 2026. They are not valuations. Always verify with a registered valuer before committing.
     </p>
+  </div>
+</section>
+
+<!-- ========== LOCALITY MAP ========== -->
+<section class="section section--paper" id="localityMap">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__copy">
+        <span class="eyebrow">Micro-market map</span>
+        <h2 class="h2">See where each corridor sits<br><span class="gold">on the Hyderabad map.</span></h2>
+        <p class="lede">Tap a marker to see asking rates, demand, supply and our short take on that micro-market.</p>
+      </div>
+    </div>
+    <div class="map-wrap">
+      <div id="localityMapCanvas" style="height:420px;width:100%;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)"></div>
+    </div>
   </div>
 </section>
 
@@ -1937,6 +1958,18 @@ const LOCALITIES = [
   }
 ];
 
+const LOCALITY_COORDS = {
+  gachibowli:[17.4464,78.3476],
+  kokapet:[17.4129,78.3423],
+  narsingi:[17.4244,78.3690],
+  manikonda:[17.4319,78.3968],
+  kondapur:[17.4639,78.3631],
+  bachupally:[17.5222,78.4067],
+  miyapur:[17.5132,78.4026],
+  shamshabad:[17.2449,78.4102],
+  rajendranagar:[17.3268,78.4788]
+};
+
 const BUILDERS = [
   {
     id:'prestige', name:'Prestige Group', mono:'PG', img:IMG.skyline,
@@ -2554,6 +2587,44 @@ function renderLocalities(){
     };
     card.addEventListener('click', open);
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
+}
+
+/* ============================================================
+   RENDER: LOCALITY MAP
+   ============================================================ */
+let localityMap = null;
+function renderLocalityMap(){
+  const canvas = $('#localityMapCanvas');
+  if (!canvas) return;
+  if (localityMap) {
+    localityMap.remove();
+    localityMap = null;
+    canvas.innerHTML = '';
+  }
+  localityMap = L.map(canvas, { scrollWheelZoom:false }).setView([17.42,78.47], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap contributors',
+    maxZoom:18
+  }).addTo(localityMap);
+  const zoneColors = { west:'#c9a45c', north:'#7aa57a', south:'#a47a7a', central:'#7a7aa4' };
+  LOCALITIES.forEach(l => {
+    const c = LOCALITY_COORDS[l.id];
+    if (!c) return;
+    const marker = L.marker(c).addTo(localityMap);
+    const inrLow = '₹' + l.pxLow.toLocaleString('en-IN');
+    const inrHigh = '₹' + l.pxHigh.toLocaleString('en-IN');
+    marker.bindPopup(`
+      <div style="font-family:var(--sans);font-size:.82rem;line-height:1.4;min-width:220px">
+        <div style="font-weight:700;color:var(--ink);font-size:.95rem;margin-bottom:.25rem">${esc(l.name)}</div>
+        <div style="color:var(--muted);font-size:.72rem;margin-bottom:.4rem">${esc(l.zoneLabel)} · ${esc(l.trend)} trend</div>
+        <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:.4rem">
+          <span>${inrLow} – ${inrHigh} / ${esc(l.unit)}</span>
+          <span style="font-weight:700">${l.yield} yield</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);max-height:80px;overflow:hidden">${esc(l.tagline)}</div>
+      </div>
+    `);
   });
 }
 
@@ -3426,6 +3497,7 @@ document.addEventListener('keydown', e => {
    ============================================================ */
 renderTicker();
 renderLocalities();
+renderLocalityMap();
 renderBuilders();
 renderProjects();
 renderInsights();
@@ -3445,5 +3517,6 @@ observeReveals();
 
 })();
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZGo=" crossorigin=""></script>
 </body>
 </html>
