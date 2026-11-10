@@ -800,7 +800,7 @@ body.has-shortbar .wa{bottom:88px}
   .brand__name{font-size:.94rem}
 }
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJB4IIN+Gfy1xOC1NX+A4q8mM1BqH3yGgWv0Z4=" crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -2595,37 +2595,42 @@ function renderLocalities(){
    ============================================================ */
 let localityMap = null;
 function renderLocalityMap(){
-  const canvas = $('#localityMapCanvas');
-  if (!canvas) return;
-  if (localityMap) {
-    localityMap.remove();
-    localityMap = null;
-    canvas.innerHTML = '';
-  }
-  localityMap = L.map(canvas, { scrollWheelZoom:false }).setView([17.42,78.47], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'© OpenStreetMap contributors',
-    maxZoom:18
-  }).addTo(localityMap);
-  const zoneColors = { west:'#c9a45c', north:'#7aa57a', south:'#a47a7a', central:'#7a7aa4' };
-  LOCALITIES.forEach(l => {
-    const c = LOCALITY_COORDS[l.id];
-    if (!c) return;
-    const marker = L.marker(c).addTo(localityMap);
-    const inrLow = '₹' + l.pxLow.toLocaleString('en-IN');
-    const inrHigh = '₹' + l.pxHigh.toLocaleString('en-IN');
-    marker.bindPopup(`
-      <div style="font-family:var(--sans);font-size:.82rem;line-height:1.4;min-width:220px">
-        <div style="font-weight:700;color:var(--ink);font-size:.95rem;margin-bottom:.25rem">${esc(l.name)}</div>
-        <div style="color:var(--muted);font-size:.72rem;margin-bottom:.4rem">${esc(l.zoneLabel)} · ${esc(l.trend)} trend</div>
-        <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:.4rem">
-          <span>${inrLow} – ${inrHigh} / ${esc(l.unit)}</span>
-          <span style="font-weight:700">${l.yield} yield</span>
+  try {
+    const canvas = $('#localityMapCanvas');
+    if (!canvas) return;
+    if (localityMap) {
+      localityMap.remove();
+      localityMap = null;
+      canvas.innerHTML = '';
+    }
+    localityMap = L.map(canvas, { scrollWheelZoom:false }).setView([17.42,78.47], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap contributors',
+      maxZoom:18
+    }).addTo(localityMap);
+    LOCALITIES.forEach(l => {
+      const c = LOCALITY_COORDS[l.id];
+      if (!c) return;
+      const marker = L.marker(c).addTo(localityMap);
+      const inrLow = '₹' + l.pxLow.toLocaleString('en-IN');
+      const inrHigh = '₹' + l.pxHigh.toLocaleString('en-IN');
+      marker.bindPopup(`
+        <div style="font-family:var(--sans);font-size:.82rem;line-height:1.4;min-width:220px">
+          <div style="font-weight:700;color:var(--ink);font-size:.95rem;margin-bottom:.25rem">${esc(l.name)}</div>
+          <div style="color:var(--muted);font-size:.72rem;margin-bottom:.4rem">${esc(l.zoneLabel)} · ${esc(l.trend)} trend</div>
+          <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:.4rem">
+            <span>${inrLow} – ${inrHigh} / ${esc(l.unit)}</span>
+            <span style="font-weight:700">${l.yield} yield</span>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);max-height:80px;overflow:hidden">${esc(l.tagline)}</div>
         </div>
-        <div style="font-size:.72rem;color:var(--muted);max-height:80px;overflow:hidden">${esc(l.tagline)}</div>
-      </div>
-    `);
-  });
+      `);
+    });
+  } catch(e){
+    console.warn('Map could not load:', e);
+    const canvas = $('#localityMapCanvas');
+    if(canvas) canvas.innerHTML = '<p style="padding:2rem;color:var(--muted);text-align:center">Map unavailable — tap any locality card above to read its notes.</p>';
+  }
 }
 
 /* ============================================================
@@ -2813,7 +2818,7 @@ function bindFilters(){
   $$('[data-lzone]').forEach(btn => btn.addEventListener('click', () => {
     state.zone = 'all'; state.type = 'all'; state.band = ''; state.ready = false;
     state.localityZone = btn.dataset.lzone; syncFilterUI(); renderLocalities();
-    $$('[data-lzone]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lzone === state.zone)));
+    $$('[data-lzone]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lzone === state.localityZone)));
   }));
   $$('[data-ptype]').forEach(btn => btn.addEventListener('click', () => {
     state.zone = 'all'; state.localityZone = 'all'; state.band = ''; state.ready = false;
@@ -3517,6 +3522,6 @@ observeReveals();
 
 })();
 </script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZGo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </body>
 </html>
