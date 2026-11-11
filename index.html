@@ -833,11 +833,24 @@ body.has-shortbar .wa{bottom:88px}
   .bstats > div:nth-child(3),.bstats > div:nth-child(4){border-top:1px solid var(--line)}
   .bscore{grid-template-columns:1fr}
   .dtl-crumb{display:none}
+  /* builder rows stack on narrow screens */
+  .b-row{grid-template-columns:1fr;gap:.9rem;align-items:flex-start}
+  .b-row__score{display:none}
+  .b-row > div:nth-child(3){grid-column:1;display:flex;justify-content:space-between;align-items:center;width:100%}
 }
 @media (max-width:640px){
   /* floating WhatsApp collapses to a circle so it never covers content */
   .wa span.lbl{display:none}
   .wa{padding:.8rem;border-radius:50%}
+  /* fact strip stacks on very narrow screens */
+  .dtl-facts{grid-template-columns:1fr 1fr}
+  .dtl-facts > div:nth-child(2){border-right:0}
+  .dtl-facts > div:nth-child(3),.dtl-facts > div:nth-child(4){border-top:1px solid var(--line)}
+  /* builder detail body stacks */
+  .dtl-body{grid-template-columns:1fr}
+  /* hero actions stack */
+  .dtl-actions{flex-direction:column;align-items:stretch}
+  .dtl-actions .btn{width:100%;justify-content:center}
 }
 
 @media (max-width:560px){
