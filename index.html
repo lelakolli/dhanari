@@ -39,8 +39,8 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maison Hyderabad — Verified Flats, Villas & Plots | TSRERA Builder Intelligence</title>
-<meta name="description" content="A buyer-first residential intelligence portal for Hyderabad. Verified builder credentials, TSRERA project data, locality research, shortlisting, affordability modelling and guided site visits. No buyer fee.">
+<title>Maison Hyderabad — Verified Apartments, Villas, Plots & Commercial Spaces</title>
+<meta name="description" content="A buyer-first property intelligence portal for Hyderabad. Explore apartments, villas, plots and commercial spaces with project-stage filters, locality research and guided site visits.">
 <meta name="theme-color" content="#0A1411">
 <meta property="og:title" content="Maison Hyderabad — Verified Flats & Villas">
 <meta property="og:description" content="Buyer-first residential intelligence for Hyderabad: verified builders, TSRERA project data, locality research and guided site visits.">
@@ -278,6 +278,11 @@ body.no-scroll{overflow:hidden}
 .p-card__media{position:relative;aspect-ratio:16/10.5;min-height:210px;overflow:hidden;background:var(--ink-3)}
 .p-card__media img{width:100%;height:100%;object-fit:cover;transition:transform 1.1s var(--ease-out),filter .8s;filter:saturate(.92)}
 .p-card:hover .p-card__media img{transform:scale(1.06)}
+.p-card__gallery{position:absolute;inset:50% 12px auto;z-index:3;display:flex;justify-content:space-between;transform:translateY(-50%);pointer-events:none}
+.p-card__gallery button{width:34px;height:34px;border:1px solid rgba(248,245,238,.48);border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(10,20,17,.48);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:auto;transition:transform .3s var(--ease),background .3s,border-color .3s}
+.p-card__gallery button:hover{background:rgba(10,20,17,.82);border-color:var(--gold);transform:scale(1.08)}
+.p-card__gallery svg{width:15px;height:15px}
+.p-card__gallery button:first-child svg{transform:rotate(180deg)}
 .p-card__media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,17,.42) 0%,transparent 34%,transparent 56%,rgba(10,20,17,.55) 100%);pointer-events:none}
 .p-card__top{position:absolute;inset:14px 14px auto 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;z-index:2}
 .p-card__foot{position:absolute;inset:auto 14px 13px 14px;display:flex;justify-content:space-between;align-items:center;gap:.75rem;z-index:2;color:rgba(248,245,238,.94);font-size:.72rem;font-weight:600;letter-spacing:.02em}
@@ -1128,6 +1133,7 @@ html{scroll-behavior:smooth}
             <option value="flat">Apartment / flat</option>
             <option value="villa">Independent villa</option>
             <option value="plot">Residential plot</option>
+            <option value="commercial">Commercial space</option>
           </select>
         </div>
         <div class="field">
@@ -1247,7 +1253,7 @@ html{scroll-behavior:smooth}
     <div class="sec-head reveal">
       <div class="sec-head__copy">
         <span class="eyebrow">Project discovery</span>
-        <h2 class="h2">Seven shortlisted projects,<br><span class="gold">fully annotated.</span></h2>
+        <h2 class="h2">Eight shortlisted properties,<br><span class="gold">fully annotated.</span></h2>
         <p class="lede">Open any project for unit mix, payment plan, RERA status, construction progress and the objections we would raise in your place. Tick up to four to compare.</p>
       </div>
       <div class="sec-head__aside">
@@ -1256,6 +1262,13 @@ html{scroll-behavior:smooth}
           <button role="tab" aria-selected="false" data-ptype="flat">Flats</button>
           <button role="tab" aria-selected="false" data-ptype="villa">Villas</button>
           <button role="tab" aria-selected="false" data-ptype="plot">Plots</button>
+          <button role="tab" aria-selected="false" data-ptype="commercial">Commercial</button>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Project status filter" style="margin-top:.6rem">
+          <button role="tab" aria-selected="true" data-pstage="all">Any stage</button>
+          <button role="tab" aria-selected="false" data-pstage="prelaunch">Pre-launch</button>
+          <button role="tab" aria-selected="false" data-pstage="newlaunch">New launch</button>
+          <button role="tab" aria-selected="false" data-pstage="ready">Ready to move</button>
         </div>
         <div class="tabs" role="tablist" aria-label="Lifestyle filter" style="margin-top:.6rem">
           <span style="font-size:.7rem;color:var(--muted-2);margin-right:.4rem">Lifestyle:</span>
@@ -2795,6 +2808,29 @@ const PROJECTS = [
   }
 ];
 
+PROJECTS.push({
+  id:'district-offices', name:'The District Office Suites', short:'District Offices', builder:'myhome', locality:'gachibowli',
+  type:'commercial', typeLabel:'Commercial office', stage:'New launch', band:'200plus',
+  price:'₹1.42 Cr – ₹3.80 Cr', from:14200000, perSqft:'₹9,200 / sqft', possession:'Illustrative schedule · verify with seller',
+  rera:'Illustrative demo', reraStatus:'Demo listing · verify approvals independently', metro:'Illustrative location · verify route',
+  tagline:'A sample commercial listing to explore the office-buying workflow.',
+  images:[IMG.skyline, IMG.lobby, IMG.villa],
+  read:[
+    'This sample commercial listing demonstrates how office assets can be compared alongside residential projects. The location, pricing and specifications are illustrative demo content and are not a live offer.',
+    'Before evaluating a real office purchase, review the sanctioned commercial use, occupancy certificate, parking allocation, common-area charges and the terms governing leasing and resale.',
+    'No project approval, price, possession date or availability is represented as verified here. Request current documents from the seller and obtain independent legal and financial advice before making a decision.'
+  ],
+  quote:{text:'Treat every number on this sample listing as a prompt for due diligence, not a promise.',by:'Maison Hyderabad · Illustrative demo'},
+  units:[['Office suite · 1,250 sqft','1,250 sqft','₹1.42 Cr indicative','Illustrative only'],['Office suite · 2,400 sqft','2,400 sqft','₹2.35 Cr indicative','Illustrative only'],['Office floor · 4,100 sqft','4,100 sqft','₹3.80 Cr indicative','Illustrative only']],
+  plan:[['Expression of interest','—','Example only · confirm refundable terms'],['Agreement','—','Example only · lawyer review required'],['Milestone payments','—','Verify against signed documents']],
+  progress:[['Approval status',0,false],['Construction status',0,false],['Occupancy certificate',0,false]],
+  amenities:['Lift access','Visitor parking','Power backup'],
+  connectivity:[['Financial District','Verify','Verify'],['HITEC City','Verify','Verify'],['Outer Ring Road','Verify','Verify']],
+  objections:[['Illustrative listing only','This is demo content, not a verified property or investment offer.'],['Commercial-use approvals','Verify sanctioned use, occupancy certificate and local permissions with an independent lawyer.'],['Operating costs','Confirm maintenance, property tax, fit-out and common-area charges in writing.']],
+  facts:[['Asset type','Commercial office'],['Availability','Illustrative demo'],['Approval','Not verified'],['Possession','Not verified'],['Payment plan','Not verified'],['Price','Illustrative only']],
+  unitsAvailable:0, similar:['skyline','bellevue','vista'], lifestyle:['professional','nri']
+});
+
 const INSIGHTS = [
   { img:IMG.skyline, cat:'Market data', title:'Hyderabad price movement, corridor by corridor', body:'What actually moved between 2021 and 2026, which corridors led, and where the appreciation was priced on narrative rather than transactions.', cta:'Read the note' },
   { img:IMG.lobby, cat:'Legal', title:'The TSRERA checklist we run before any booking', body:'Eleven checks on registration currency, disclosure completeness, encumbrance and approval status — with the exact documents to request.', cta:'Open the checklist' },
@@ -2809,7 +2845,7 @@ const FAQS = [
   ['How do you score a builder?','Four published signals: RERA compliance and disclosure completeness, delivery timeliness against committed possession dates, legal record including disclosed litigation and encumbrances, and after-sales service from buyers we have placed. Each is scored out of 10 and weighted; where a builder has a material issue that the score understates, we add a written warning to their dossier.'],
   ['Where does the price data come from?','Indicative asking bands compiled from registered transaction data, primary sales desks and our own enquiry logs between January and September 2026. They are screening ranges, not valuations. Always obtain an independent valuer’s opinion before you commit.'],
   ['Can I visit a project without speaking to a sales team first?','Yes, and we recommend it. A guided visit with our consultant means you see the site with someone whose incentive is your repeat business rather than a single booking. You get a written visit note within 24 hours covering what was promised and what to verify.'],
-  ['Do you cover projects we have not listed?','Frequently. The seven projects here are a demonstration shortlist. If you send us three projects you are circling, we will return a written comparison of delivery risk, true cost per sqft and the clauses worth renegotiating — whether or not we represent them.'],
+  ['Do you cover projects we have not listed?','Frequently. The eight listings here are a demonstration shortlist. If you send us three projects you are circling, we will return a written comparison of delivery risk, true cost per sqft and the clauses worth renegotiating — whether or not we represent them.'],
   ['Is this an official portal or a booking platform?','Neither. This is an independent research and advisory desk operated by a TSRERA-registered channel partner. We do not accept bookings, hold advances or issue allotments. All figures on this site are illustrative demo content for a portfolio project.']
 ];
 
@@ -2867,7 +2903,7 @@ function toast(msg){
 }
 
 /* ---------- state ---------- */
-const state = { zone:'all', localityZone:'all', type:'all', band:'', ready:false, keyword:'', aiQuery:'', lifestyle:'all' };
+const state = { zone:'all', localityZone:'all', type:'all', stage:'all', band:'', ready:false, keyword:'', aiQuery:'', lifestyle:'all' };
 let shortlist = [];
 try {
   const raw = JSON.parse(localStorage.getItem('mh_shortlist') || '[]');
@@ -2916,7 +2952,7 @@ function renderLocalities(){
   $$('#localityGrid .l-card').forEach(card => {
     const open = () => {
       const l = loc(card.dataset.lid);
-      state.localityZone = l.zone; state.zone = 'all'; state.type = 'all'; state.band = ''; state.ready = false;
+      state.localityZone = l.zone; state.zone = 'all'; state.type = 'all'; state.stage = 'all'; state.band = ''; state.ready = false;
       syncFilterUI();
       renderProjects();
       goTo('#projects');
@@ -3080,6 +3116,10 @@ function renderProjects(){
     // Narsingi, Kondapur" must not quietly include central localities like Manikonda
     const zoneOk = state.zone === 'all' || l.zone === state.zone;
     const typeOk = state.type === 'all' || p.type === state.type;
+    const stageOk = state.stage === 'all' ||
+      (state.stage === 'prelaunch' && /pre-launch/i.test(p.stage)) ||
+      (state.stage === 'newlaunch' && /new launch|under construction/i.test(p.stage)) ||
+      (state.stage === 'ready' && /ready|immediate/i.test(p.stage));
     const bandOk = !state.band || p.band === state.band;
     const readyOk = !state.ready || /Ready|Immediate/i.test(p.stage);
     const kwOk = !kw ||
@@ -3104,7 +3144,7 @@ function renderProjects(){
     if (state.lifestyle && state.lifestyle !== 'all') {
       if (!(p.lifestyle||[]).includes(state.lifestyle)) lifeOk = false;
     }
-    return zoneOk && typeOk && bandOk && readyOk && kwOk && aiOk && lifeOk;
+    return zoneOk && typeOk && stageOk && bandOk && readyOk && kwOk && aiOk && lifeOk;
   });
 
   $('#projectGrid').innerHTML = list.map((p, i) => {
@@ -3114,7 +3154,11 @@ function renderProjects(){
     return `
     <article class="card p-card reveal" data-d="${(i % 3) + 1}" data-pid="${p.id}">
       <div class="p-card__media">
-        <img src="${p.images[0]}" alt="${esc(p.name)} — ${esc(l.name)}" loading="lazy" width="1400" height="787">
+        <img src="${p.images[0]}" alt="${esc(p.name)} — ${esc(l.name)}" loading="lazy" width="1400" height="787" data-image-index="0">
+        <div class="p-card__gallery" aria-label="${esc(p.name)} image gallery">
+          <button type="button" data-image-step="-1" aria-label="Previous image for ${esc(p.name)}">${ICON.arrow}</button>
+          <button type="button" data-image-step="1" aria-label="Next image for ${esc(p.name)}">${ICON.arrow}</button>
+        </div>
         <div class="p-card__top">
           <span class="chip ${sc.cls}"><span class="chip__dot"></span>${esc(sc.label)}</span>
           ${p.unitsAvailable && p.unitsAvailable < 10 ? `<span class="scarcity">Only ${p.unitsAvailable} units left</span>` : ''}
@@ -3155,6 +3199,18 @@ function renderProjects(){
   $$('#projectGrid .p-card').forEach(card => {
     card.addEventListener('click', e => {
       if (e.target.closest('.cmp')) return;
+      const stepButton = e.target.closest('[data-image-step]');
+      if (stepButton) {
+        e.stopPropagation();
+        const project = prj(card.dataset.pid);
+        const image = $('.p-card__media > img', card);
+        const current = Number(image.dataset.imageIndex || 0);
+        const next = (current + Number(stepButton.dataset.imageStep) + project.images.length) % project.images.length;
+        image.src = project.images[next];
+        image.dataset.imageIndex = String(next);
+        image.alt = `${project.name} — ${loc(project.locality).name}, image ${next + 1} of ${project.images.length}`;
+        return;
+      }
       openDetail('project', card.dataset.pid);
     });
   });
@@ -3232,17 +3288,25 @@ function syncFilterUI(){
   $('#fType').value = state.type === 'all' ? '' : state.type;
   $('#fBudget').value = state.band || '';
   $$('[data-lifestyle]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lifestyle === state.lifestyle)));
+  $$('[data-pstage]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.pstage === state.stage)));
 }
 function bindFilters(){
   $$('[data-lzone]').forEach(btn => btn.addEventListener('click', () => {
-    state.zone = 'all'; state.type = 'all'; state.band = ''; state.ready = false;
+    state.zone = 'all'; state.type = 'all'; state.stage = 'all'; state.band = ''; state.ready = false;
     state.localityZone = btn.dataset.lzone; syncFilterUI(); renderLocalities();
     $$('[data-lzone]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lzone === state.localityZone)));
   }));
   $$('[data-ptype]').forEach(btn => btn.addEventListener('click', () => {
-    state.zone = 'all'; state.localityZone = 'all'; state.band = ''; state.ready = false;
+    state.zone = 'all'; state.localityZone = 'all'; state.stage = 'all'; state.band = ''; state.ready = false;
     state.type = btn.dataset.ptype;
+    syncFilterUI();
     $$('[data-ptype]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptype === state.type)));
+    renderProjects();
+  }));
+  $$('[data-pstage]').forEach(btn => btn.addEventListener('click', () => {
+    state.stage = btn.dataset.pstage;
+    state.ready = false;
+    $$('[data-pstage]').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
     renderProjects();
   }));
   $$('[data-lifestyle]').forEach(btn => btn.addEventListener('click', () => {
@@ -3254,8 +3318,9 @@ function bindFilters(){
     e.preventDefault();
     state.zone = $('#fLocality').value || 'all';
     state.type = $('#fType').value || 'all';
-    state.band = $('#fBudget').value; state.ready = false;
+    state.band = $('#fBudget').value; state.ready = false; state.stage = 'all';
     state.keyword = $('#fKeyword').value.trim().toLowerCase();
+    syncFilterUI();
     $$('[data-ptype]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptype === state.type)));
     renderProjects();
     goTo('#projects');
@@ -3280,7 +3345,7 @@ function bindFilters(){
   });
   $$('[data-quick]').forEach(btn => btn.addEventListener('click', () => {
     const q = btn.dataset.quick;
-    state.zone = 'all'; state.type = 'all'; state.band = ''; state.ready = false;
+    state.zone = 'all'; state.type = 'all'; state.stage = 'all'; state.band = ''; state.ready = false;
     if (q === 'kokapet') { state.zone = 'west'; state.type = 'flat'; state.band = ''; }
     else if (q === 'ready') { state.zone = 'all'; state.localityZone = 'all'; state.type = 'all'; state.band = ''; state.ready = true; }
     else if (q === 'villa') { state.zone = 'all'; state.localityZone = 'all'; state.type = 'villa'; state.band = ''; state.ready = false; }
@@ -3290,7 +3355,7 @@ function bindFilters(){
     goTo('#projects');
   }));
   $('#resetProjects').addEventListener('click', () => {
-    state.zone='all'; state.type='all'; state.band=''; state.ready=false; state.keyword=''; state.aiQuery=''; state.lifestyle='all';
+    state.zone='all'; state.type='all'; state.stage='all'; state.band=''; state.ready=false; state.keyword=''; state.aiQuery=''; state.lifestyle='all';
     $('#fKeyword').value = ''; $('#fAI').value = '';
     $('#aiParsed').style.display = 'none';
     syncFilterUI(); renderProjects();
@@ -3887,7 +3952,7 @@ function initCalc(){
     ).join('');
     $$('[data-fit]').forEach(a => a.addEventListener('click', () => {
       const l = loc(a.dataset.fit);
-      state.zone = l.zone; state.type = 'all'; state.band = ''; state.ready = false;
+      state.zone = l.zone; state.type = 'all'; state.stage = 'all'; state.band = ''; state.ready = false;
       syncFilterUI(); renderProjects();
     }));
   }
