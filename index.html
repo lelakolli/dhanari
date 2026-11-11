@@ -1855,6 +1855,38 @@ body.has-shortbar .wa{bottom:88px}
 .dtl-projrow:hover{border-color:rgba(201,164,92,.5);background:rgba(201,164,92,.04)}
 .dtl-projrow img{width:64px;height:54px;object-fit:cover;border-radius:4px}
 
+/* ================= DETAIL PAGES - MOBILE OVERRIDES ================= */
+/* These must live in this style block (after base detail CSS) so they win the cascade over block-1 media queries */
+
+@media (max-width:1080px){
+  .dtl-body{grid-template-columns:1fr}
+  .dtl-side{position:static}
+  .dtl-main{overflow:visible}
+}
+
+@media (max-width:820px){
+  .dtl-facts{grid-template-columns:1fr;overflow:hidden}
+  .dtl-facts > div{border-right:0;border-bottom:1px solid var(--line)}
+  .dtl-facts > div:last-child{border-bottom:0}
+  .dtl-side{flex-direction:column;gap:1rem}
+  .dtl-actions{flex-direction:column;align-items:stretch}
+  .dtl-actions .btn{width:100%;justify-content:center}
+  .dtl-hero__meta{flex-direction:column;align-items:flex-start}
+  .dtl-hero__row{flex-direction:column;align-items:flex-start;gap:1rem}
+}
+
+@media (max-width:640px){
+  .detail{width:100vw;left:0;right:0}
+  .dtl-body{grid-template-columns:1fr}
+  .dtl-side{position:static;top:auto}
+  .dtl-facts{grid-template-columns:1fr}
+  .dtl-facts > div{border-right:0;border-bottom:1px solid var(--line)}
+  .dtl-facts > div:last-child{border-bottom:0}
+  .plan__row{grid-template-columns:30px 1fr;gap:.7rem}
+  .plan__row .pc{text-align:left}
+  .units{min-width:260px}
+}
+
 </style>
 
 <!-- ========== PROJECT DETAIL ========== -->
