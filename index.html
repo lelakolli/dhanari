@@ -1730,7 +1730,7 @@ body.has-shortbar .wa{bottom:88px}
 .dtl-facts .s{font-size:.72rem;color:var(--muted);margin-top:.18rem;font-weight:600}
 
 /* Body layout */
-.dtl-body{display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:clamp(24px,3.4vw,46px);padding-block:clamp(34px,4.4vw,58px) clamp(50px,7vw,90px);align-items:start}
+.dtl-body{display:grid;grid-template-columns:1fr;gap:clamp(24px,3.4vw,46px);padding-block:clamp(34px,4.4vw,58px) clamp(50px,7vw,90px);align-items:start}
 .dtl-main{display:flex;flex-direction:column;gap:clamp(28px,3.6vw,44px);min-width:0}
 .dtl-sec{scroll-margin-top:90px}
 .dtl-sec__h{display:flex;align-items:center;gap:.75rem;margin-bottom:1.15rem}
@@ -1799,7 +1799,7 @@ body.has-shortbar .wa{bottom:88px}
 .objection p{font-size:.83rem;line-height:1.68;color:var(--text-soft)}
 
 /* sidebar */
-.dtl-side{position:sticky;top:76px;display:flex;flex-direction:column;gap:1rem}
+.dtl-side{position:static;display:flex;flex-direction:column;gap:1rem}
 .side-card{border:1px solid var(--line);border-radius:var(--r-md);background:var(--paper);padding:1.15rem 1.2rem;box-shadow:var(--shadow-xs)}
 .side-card h3{font-size:1rem;margin-bottom:.85rem;letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem}
 .side-card h3 svg{width:15px;height:15px;color:var(--gold-deep)}
@@ -1855,14 +1855,18 @@ body.has-shortbar .wa{bottom:88px}
 .dtl-projrow:hover{border-color:rgba(201,164,92,.5);background:rgba(201,164,92,.04)}
 .dtl-projrow img{width:64px;height:54px;object-fit:cover;border-radius:4px}
 
-/* ================= DETAIL PAGES - MOBILE OVERRIDES ================= */
-/* These must live in this style block (after base detail CSS) so they win the cascade over block-1 media queries */
+/* ================= DETAIL PAGES - DESKTOP LAYOUT (min-width) ================= */
+/* Base is mobile-first (single column, static sidebar). Desktop gets two columns + sticky sidebar. */
 
-@media (max-width:1080px){
-  .dtl-body{grid-template-columns:1fr}
-  .dtl-side{position:static}
-  .dtl-main{overflow:visible}
+@media (min-width:1081px){
+  .dtl-body{grid-template-columns:minmax(0,1fr) 336px;gap:clamp(24px,3.4vw,46px)}
+  .dtl-side{position:sticky;top:76px;flex-direction:column}
+  .plan__row{grid-template-columns:38px 1.1fr 90px 1.4fr;gap:1rem}
+  .units{min-width:520px}
 }
+
+/* ================= DETAIL PAGES - MOBILE OVERRIDES ================= */
+/* Child-element fixes that still apply on narrow screens */
 
 @media (max-width:820px){
   .dtl-facts{grid-template-columns:1fr;overflow:hidden}
@@ -1877,8 +1881,7 @@ body.has-shortbar .wa{bottom:88px}
 
 @media (max-width:640px){
   .detail{width:100vw;left:0;right:0}
-  .dtl-body{grid-template-columns:1fr}
-  .dtl-side{position:static;top:auto}
+  .dtl-main{overflow:visible}
   .dtl-facts{grid-template-columns:1fr}
   .dtl-facts > div{border-right:0;border-bottom:1px solid var(--line)}
   .dtl-facts > div:last-child{border-bottom:0}
