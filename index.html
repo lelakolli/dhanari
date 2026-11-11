@@ -776,7 +776,66 @@ body.has-shortbar .wa{bottom:88px}
   .hero h1 .line > span{transform:none}
 }
 
-/* 8. RESPONSIVE --------------------------------------------- */
+/* 8. MOTION & MICRO-INTERACTIONS --------------------------------------------- */
+
+/* Smooth section scroll for anchor navigation */
+html{scroll-behavior:smooth}
+
+/* Skeleton loading states */
+.skeleton{background:linear-gradient(90deg,var(--sand-deep) 25%,var(--sand) 50%,var(--sand-deep) 75%);background-size:200% 100%;animation:skeleton 1.5s infinite ease-in-out;border-radius:var(--r-md);color:transparent}
+.skeleton-text{height:1rem;margin-bottom:.75rem;border-radius:4px}
+.skeleton-text:last-child{margin-bottom:0}
+.skeleton-title{height:1.25rem;width:60%}
+.skeleton-subtitle{height:.85rem;width:45%}
+.skeleton-img{height:210px;width:100%;border-radius:var(--r-lg)}
+.skeleton-price{height:1.36rem;width:35%;margin-top:auto}
+.skeleton-btn{height:38px;width:120px;border-radius:99px}
+@keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Enhanced card hover with glow */
+.card:hover,.p-card:hover{box-shadow:var(--shadow-lg),0 0 24px rgba(201,164,92,.12);border-color:rgba(201,164,92,.55)}
+.p-card:hover .p-card__media img{transform:scale(1.09)}
+.p-card__go:active{transform:scale(.9) rotate(-45deg)}
+.l-card:hover{box-shadow:var(--shadow-md),0 0 20px rgba(201,164,92,.1)}
+.b-row:hover{transform:translateX(4px);box-shadow:var(--shadow-sm),0 0 16px rgba(201,164,92,.08)}
+
+/* CTA icon bounce on primary buttons */
+.btn--gold:active{transform:translateY(-2px) scale(.97)}
+.btn--gold svg{transition:transform .3s var(--ease)}
+.btn--gold:focus-visible svg{transform:rotate(12deg) scale(1.1)}
+.wa{animation:waPulse 2s ease-in-out infinite}
+
+/* Staggered grid reveals that work with IntersectionObserver */
+.grid > .reveal,.card.reveal,.p-card.reveal,.l-card.reveal,.b-row.reveal{animation:none}
+.grid > .reveal.in-view,.card.reveal.in-view,.p-card.reveal.in-view,.l-card.reveal.in-view,.b-row.reveal.in-view{animation:fadeUp .65s var(--ease-out) forwards}
+.grid > .reveal.in-view:nth-child(1){animation-delay:.06s}
+.grid > .reveal.in-view:nth-child(2){animation-delay:.12s}
+.grid > .reveal.in-view:nth-child(3){animation-delay:.18s}
+.grid > .reveal.in-view:nth-child(4){animation-delay:.24s}
+.grid > .reveal.in-view:nth-child(5){animation-delay:.3s}
+.grid > .reveal.in-view:nth-child(6){animation-delay:.36s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+/* Hero counter entrance bump */
+.stat__num{display:inline-block}
+.stat__num.bounce{animation:statBump .5s var(--ease) both}
+@keyframes statBump{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* Modal scale entrance from center */
+@keyframes panelScale{from{opacity:0;transform:translateY(24px) scale(.92)}to{opacity:1;transform:none}}
+.modal__panel{animation:panelScale .55s var(--ease-out) both}
+.cost-modal__card{animation:panelScale .55s var(--ease-out) both}
+
+/* Detail panel entrance */
+@keyframes detailRise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.detail.open{animation:detailRise .55s var(--ease) both}
+
+/* Section headings pop-in */
+.sec-head.reveal{animation:none}
+.sec-head.reveal.in-view{animation:slideIn .7s var(--ease-out) forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+
+/* 9. RESPONSIVE --------------------------------------------- */
 /* Progressive enhancement: the translucent "glass" treatment above is a fallback
    (opaque). Where backdrop-filter is supported — and only there — the surfaces
    become translucent, which is what the design was drawn for. iOS Safari < 18
@@ -3658,6 +3717,11 @@ function openDetail(kind, id, fromHistory){
   trapFocus(el);
   el.scrollTop = 0;
   requestAnimationFrame(() => { el.classList.add('is-anim'); });
+
+  // Skeleton loading effect on detail content
+  const skel = el.querySelectorAll('#pdRead,#pdUnits,#pdPlan,#pdProgress,#pdAmenities,#pdConn,#pdObjections,#pdSimilar,#pdFactsList,#pdCost,#pdBuilder,#bdRead,#bdUnits,#bdPlan,#bdProgress,#bdAmenities,#bdConn,#bdObjections,#bdSimilar,#bdFactsList,#bdCost,#bdBuilder');
+  skel.forEach(s => s.classList.add('skeleton','skeleton-text'));
+  setTimeout(() => { skel.forEach(s => s.classList.remove('skeleton','skeleton-text')); }, 350);
   const hash = '#/' + kind + '/' + id;
   if (location.hash === hash) return;
   try {
