@@ -840,6 +840,11 @@ html{scroll-behavior:smooth}
 .sec-head.reveal.in-view{animation:slideIn .7s var(--ease-out) forwards}
 @keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
 
+/* A fixed-position detail overlay wider than the viewport still counts
+   toward the document's scroll width, leaving a stray horizontal bar on
+   mobile. Clipping the axis is enough and does not affect layout. */
+html,body{overflow-x:clip}
+
 /* 9. RESPONSIVE --------------------------------------------- */
 /* Progressive enhancement: the translucent "glass" treatment above is a fallback
    (opaque). Where backdrop-filter is supported — and only there — the surfaces
@@ -902,6 +907,15 @@ html{scroll-behavior:smooth}
   .b-row__score{display:none}
   .b-row > div:nth-child(3){grid-column:1;display:flex;justify-content:space-between;align-items:center;width:100%}
   /* detail pages stack on mobile */
+  /* The back link wraps to four lines ("All / projects / Gachibowli / ...")
+     because it sits in a flex row with the actions. Fix the row: back link
+     on its own, actions underneath, each full width. */
+  .dtl-bar .dtl-crumb{display:none}
+  .dtl-bar .wrap{gap:.55rem;align-items:stretch}
+  .dtl-bar .dtl-back{width:100%;justify-content:flex-start}
+  .dtl-bar .dtl-actions{width:100%;flex-direction:row;align-items:stretch;gap:.5rem}
+  .dtl-bar .dtl-actions .btn{flex:1 1 auto}
+  .dtl-bar .modal__close,.dtl-bar .dtl-close{flex:0 0 auto}
   .dtl-body{grid-template-columns:1fr}
   .dtl-side{position:static;top:auto;flex-direction:column;gap:1rem}
   .dtl-actions{flex-direction:column;align-items:stretch}
@@ -982,7 +996,7 @@ html{scroll-behavior:smooth}
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-  #localityMap{width:100%;height:420px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);background:#eef2f2}
+  #localityMap{position:relative;width:100%;height:420px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);background:#eef2f2}
   .leaflet-popup-content-wrapper{font-family:var(--font-sans);font-size:.82rem}
   .leaflet-popup-content h4{margin:0 0 .4rem;font-size:.95rem;color:var(--ink)}
   .leaflet-popup-content p{margin:0 0 .3rem;font-size:.78rem;color:var(--muted);line-height:1.4}
@@ -1772,7 +1786,9 @@ html{scroll-behavior:smooth}
 .detail.open{display:block;animation:detailIn .5s var(--ease) both}
 @keyframes detailIn{from{opacity:0}to{opacity:1}}
 .dtl-bar{position:sticky;top:0;z-index:30;background:rgba(248,245,238,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:.62rem 0}
-.dtl-bar .wrap{display:flex;align-items:center;gap:1rem;justify-content:space-between}
+.dtl-bar .wrap{display:flex;align-items:center;gap:.75rem 1rem;justify-content:space-between;flex-wrap:wrap}
+.dtl-bar .dtl-crumb{min-width:0;flex:1 1 auto}
+.dtl-bar .dtl-actions{flex:0 0 auto}
 .dtl-back{display:inline-flex;align-items:center;gap:.5rem;font-size:.8rem;font-weight:700;color:var(--text-soft);transition:gap .3s var(--ease),color .3s}
 .dtl-back:hover{gap:.72rem;color:var(--gold-ink)}
 .dtl-back svg{width:15px;height:15px}
@@ -2970,16 +2986,37 @@ function renderLocalities(){
 function renderLocalityMap(){
   const mapEl = $('#localityMap');
   if (!mapEl) return;
+  /* Leaflet and OpenStreetMap tiles are third-party and are blocked on
+     some corporate, campus and government networks. Without this guard a
+     missing L throws here and takes every renderer below it with it, so
+     the builders, projects, calculator, FAQ and footer never mount.
+     Fall back to a static, self-contained corridor diagram instead. */
+  const hasLeaflet = (typeof window.L !== 'undefined') && window.L && typeof window.L.map === 'function';
+  if (!hasLeaflet){
+    renderLocalityMapFallback(mapEl);
+    return;
+  }
   const coords = {
     gachibowli:[17.4481,78.3489], kokapet:[17.4031,78.3333], narsingi:[17.4210,78.3354],
     manikonda:[17.4298,78.3915], kondapur:[17.4670,78.3680], bachupally:[17.5534,78.4037],
     miyapur:[17.5267,78.4235], shamshabad:[17.2426,78.3945]
   };
   const map = L.map('localityMap', {scrollWheelZoom:false, zoomControl:false}).setView([17.42,78.37], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution:'&copy; OpenStreetMap contributors',
     maxZoom:18
   }).addTo(map);
+  /* If the tile CDN is blocked the map goes blank even though Leaflet
+     loaded. Detect that and swap in the same static fallback. */
+  let tileErrors = 0;
+  tiles.on('tileerror', () => {
+    tileErrors += 1;
+    if (tileErrors >= 3 && !mapEl.dataset.fallback){
+      mapEl.dataset.fallback = '1';
+      try { map.remove(); } catch(e){}
+      renderLocalityMapFallback(mapEl);
+    }
+  });
   L.control.zoom({position:'bottomright'}).addTo(map);
   LOCALITIES.forEach(l => {
     const c = coords[l.id];
@@ -3000,6 +3037,84 @@ function renderLocalityMap(){
       </div>
     `);
   });
+}
+
+/* ============================================================
+   RENDER: LOCALITY MAP — static fallback
+   Drawn with absolutely-positioned markers over a hand-built corridor
+   grid, so it needs no tiles, no Leaflet and no network at all.
+   ============================================================ */
+function renderLocalityMapFallback(mapEl){
+  const coords = {
+    gachibowli:[32,44], kokapet:[20,58], narsingi:[28,66], manikonda:[26,52],
+    kondapur:[46,40], bachupally:[18,26], miyapur:[46,16], shamshabad:[40,88]
+  };
+  const pts = LOCALITIES.filter(l => coords[l.id]);
+  const links = [
+    ['miyapur','bachupally'],['bachupally','kondapur'],['kondapur','gachibowli'],
+    ['gachibowli','kokapet'],['gachibowli','manikonda'],['kokapet','narsingi'],
+    ['manikonda','narsingi'],['kondapur','manikonda'],['narsingi','shamshabad']
+  ];
+  const fig = document.createElement('div');
+  fig.className = 'map-fallback';
+  fig.setAttribute('role','img');
+  fig.setAttribute('aria-label','Static diagram of the eight tracked micro-markets across the west, north and south corridors of Hyderabad');
+  fig.innerHTML = `
+    <svg class="map-fallback__grid" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
+      <defs>
+        <pattern id="mgrid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M10 0H0v10" fill="none" stroke="currentColor" stroke-width=".15"/>
+        </pattern>
+      </defs>
+      <rect width="100" height="100" fill="url(#mgrid)"/>
+      <path d="M0 62 Q38 54 100 70" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 2" opacity=".55"/>
+      <path d="M0 34 Q46 30 100 40" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 2" opacity=".55"/>
+      <text x="3" y="60" font-size="2.6" fill="currentColor" opacity=".7">OUTER RING ROAD</text>
+      <text x="3" y="32" font-size="2.6" fill="currentColor" opacity=".7">NH-65</text>
+    </svg>
+    <svg class="map-fallback__links" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none">
+      ${links.map(([a,b]) => {
+        const A = coords[a], B = coords[b];
+        if (!A || !B) return '';
+        return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}"/>`;
+      }).join('')}
+    </svg>
+    ${pts.map(l => {
+      const [x,y] = coords[l.id];
+      return `<button type="button" class="map-fallback__pin" data-fid="${l.id}"
+        style="--x:${x}%;--y:${y}%" aria-label="${esc(l.name)}: ${esc(l.trend)} trend, ${l.projects} tracked projects">
+        <i aria-hidden="true"></i><span>${esc(l.name.split(' / ')[0])}</span>
+      </button>`;
+    }).join('')}
+    <div class="map-fallback__card" id="fallbackCard" aria-live="polite"></div>
+    <p class="map-fallback__note">Interactive map unavailable on this network &mdash; showing the corridor diagram.</p>
+  `;
+  mapEl.innerHTML = '';
+  mapEl.appendChild(fig);
+
+  const card = fig.querySelector('#fallbackCard');
+  const show = id => {
+    const l = loc(id);
+    if (!l) return;
+    card.innerHTML = `
+      <b>${esc(l.name)}</b>
+      <span class="map-fallback__rate">₹${l.pxLow.toLocaleString('en-IN')}–${l.pxHigh.toLocaleString('en-IN')} / ${esc(l.unit)}</span>
+      <span class="map-fallback__meta">${esc(l.zoneLabel)} &middot; ${l.projects} projects &middot; yield ${esc(l.yield)} &middot; <em>${esc(l.trend)}</em></span>
+      <a href="#projects" data-fallgoto="${l.id}">Read the corridor note</a>`;
+    fig.querySelectorAll('.map-fallback__pin').forEach(p => p.classList.toggle('is-on', p.dataset.fid === id));
+  };
+  fig.querySelectorAll('.map-fallback__pin').forEach(btn => {
+    btn.addEventListener('click', () => show(btn.dataset.fid));
+    btn.addEventListener('mouseenter', () => show(btn.dataset.fid));
+    btn.addEventListener('focus', () => show(btn.dataset.fid));
+  });
+  fig.querySelectorAll('[data-fallgoto]').forEach(a => a.addEventListener('click', () => {
+    const l = loc(a.dataset.fallgoto);
+    if (!l) return;
+    state.zone = l.zone; state.type = 'all'; state.stage = 'all'; state.band = ''; state.ready = false;
+    syncFilterUI(); renderProjects();
+  }));
+  show(pts[0] && pts[0].id);
 }
 
 /* ============================================================
@@ -4149,20 +4264,27 @@ function injectStructuredData(){
 /* ============================================================
    BOOT
    ============================================================ */
-renderTicker();
-renderLocalities();
-renderLocalityMap();
-renderBuilders();
-renderProjects();
-renderInsights();
-renderFaq();
-injectStructuredData();
-bindFilters();
-initVisitForm();
-initCalc();
-initCounters();
-initHeader();
-observeReveals();
+/* Each renderer is isolated: a third-party failure (blocked map tiles,
+   a missing CDN, a browser without an API) must never stop the rest of
+   the page from rendering. */
+const safe = (label, fn) => {
+  try { fn(); }
+  catch (err) { console.error('[render] ' + label + ' failed', err); }
+};
+safe('ticker', renderTicker);
+safe('localities', renderLocalities);
+safe('locality map', renderLocalityMap);
+safe('builders', renderBuilders);
+safe('projects', renderProjects);
+safe('insights', renderInsights);
+safe('faq', renderFaq);
+safe('structured data', injectStructuredData);
+safe('filters', bindFilters);
+safe('visit form', initVisitForm);
+safe('calculator', initCalc);
+safe('counters', initCounters);
+safe('header', initHeader);
+safe('reveals', observeReveals);
 
 /* Deep link on load */
 (function(){

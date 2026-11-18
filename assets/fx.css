@@ -127,7 +127,17 @@
    added at the end of <body>), otherwise a heading already on
    screen would flash in its un-animated state and then jump. */
 .fx-word > i{transform:translateY(112%);opacity:0}
-.fx-word{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.04em}
+/* The mask has to clear the line box, not just the glyph. At the
+   default .h2 line-height of 1.06 a tight `overflow:hidden` shears
+   the descenders off the gold line ("worth buying" lost its g). */
+/* vertical-align must stay on the baseline: `bottom` would align the
+   inline-block's bottom margin edge to the line box and push the word
+   out of it. The padding below is the descender clearance inside the
+   mask, offset by a matching negative margin so layout is unchanged. */
+.fx-word{
+  display:inline-block;overflow:hidden;vertical-align:baseline;
+  padding-bottom:.18em;margin-bottom:-.18em
+}
 .fx-word > i{display:inline-block;font-style:inherit}
 .fx-on .fx-head.in-view .fx-word > i{animation:fxWordUp .9s var(--ease-out) forwards}
 @keyframes fxWordUp{to{transform:translateY(0);opacity:1}}
@@ -138,26 +148,55 @@
 .fx-on .sec-head.reveal.fx-head-parent.in-view{opacity:1;transform:none}
 
 
-/* Gold shimmer that keeps travelling, not just once.
-   The gradient is painted per word: background-clip:text only clips
-   to glyphs drawn by the same box, so putting it on a parent whose
-   text lives in child <span>s would leave the words transparent. */
+/* Gold shimmer that keeps travelling.
+   Two constraints fight here and both must be respected:
+   1. background-clip:text only clips to glyphs painted by the same box,
+      so the gradient has to sit on the word's <i>, not the phrase;
+   2. that <i> already carries the fxWordUp rise *animation*, and only
+      one `animation` per element is allowed — setting the sheen on it
+      replaced the rise, leaving every word translated out of its mask.
+   So the sheen animates a registered custom property in an animation
+   on the parent span, and the <i> only reads it. */
+@property --fx-sheen{
+  syntax:'<percentage>';inherits:true;initial-value:0%
+}
+.fx-on .fx-head .gold .fx-word,
+.fx-on .fx-sheen .fx-word{
+  animation:fxSheenShift 9s linear infinite;
+  animation-delay:var(--fx-sheen-delay,0s)
+}
 .fx-on .fx-head .gold .fx-word > i,
 .fx-on .fx-sheen .fx-word > i{
-  background:linear-gradient(100deg,var(--gold-deep) 0%,var(--gold-deep) 32%,#E8C87F 46%,#FFF3D6 52%,#E8C87F 58%,var(--gold-deep) 72%,var(--gold-deep) 100%);
+  background-image:linear-gradient(100deg,
+    var(--gold-deep) 0%,var(--gold-deep) 30%,#E8C87F 44%,#FFF3D6 50%,
+    #E8C87F 56%,var(--gold-deep) 70%,var(--gold-deep) 100%);
   background-size:280% 100%;
+  background-position:calc(var(--fx-sheen,0%) * 1) 0;
   -webkit-background-clip:text;background-clip:text;
-  color:transparent;
-  animation:fxSheen 9s linear infinite;
+  color:transparent
 }
 .fx-on .section--ink .fx-head .gold .fx-word > i,
 .fx-on .section--ink .fx-sheen .fx-word > i{
-  background-image:linear-gradient(100deg,var(--gold-light) 0%,var(--gold-light) 32%,#FFF6DE 46%,#FFFFFF 52%,#FFF6DE 58%,var(--gold-light) 72%,var(--gold-light) 100%);
+  background-image:linear-gradient(100deg,
+    var(--gold-light) 0%,var(--gold-light) 30%,#FFF6DE 44%,#FFFFFF 50%,
+    #FFF6DE 56%,var(--gold-light) 70%,var(--gold-light) 100%);
 }
+@keyframes fxSheenShift{
+  from{--fx-sheen:180%}
+  to{--fx-sheen:-80%}
+}
+/* The hero's gradient line is a single element, so it can animate its
+   own background directly. */
 @keyframes fxSheen{from{background-position:180% 0}to{background-position:-80% 0}}
 
 /* Hero's existing gradient gets a slow drift too */
 .fx-on .grad-text{background-size:220% 100%;animation:fxSheen 12s linear infinite}
+
+/* A heading that was not word-split must keep a real colour: the sheen
+   rules set color:transparent and only the per-word <i> paint fills. */
+.fx-on .fx-head .gold{color:var(--gold-deep)}
+.fx-on .section--ink .fx-head .gold{color:var(--gold-light)}
+.fx-on .fx-head .gold .fx-word > i{color:inherit}
 
 /* ------------------------------------------------------------
    04. HERO — grain drift, parallax-free glow wander, chips
@@ -410,6 +449,8 @@
   .fx-on .p-card__media::before,
   .fx-on .i-card__media::before,
   .fx-on .btn::before{display:none!important}
+  .fx-on .fx-head .gold .fx-word,
+  .fx-on .fx-sheen .fx-word{animation:none!important}
   .fx-on .fx-head .gold .fx-word > i,
   .fx-on .fx-sheen .fx-word > i,
   .fx-on .grad-text{
@@ -682,7 +723,8 @@
    ============================================================ */
 
 /* 15.1 Cinematic letterbox bars slide away after the loader */
-.fx-bars{position:fixed;inset:0;z-index:9998;pointer-events:none;overflow:hidden}
+.fx-bars{position:fixed;top:0;left:0;right:0;height:0;z-index:9998;pointer-events:none;overflow:hidden}
+.fx-bars i{left:0;right:0}
 .fx-bars i{
   position:absolute;left:0;right:0;height:0;background:#050B09;
   transition:height .9s var(--ease-out)
@@ -693,14 +735,17 @@
 .fx-bars.gone i{height:0;transition:height .8s var(--ease-out) .15s}
 @media (prefers-reduced-motion:reduce){.fx-bars{display:none}}
 
-/* 15.2 Images "develop" as they enter: a slight scale + fade, driven by
-       the observer's .in-view on their card */
+/* 15.2 Photos warm up as their card enters: brightness and saturation
+       only. Opacity and transform are deliberately left alone — those
+       belong to the base card hover zoom, and hiding a 16:10 photo
+       behind an animation reads as a broken image if the observer is
+       late. */
 .fx-on .p-card__media img,
-.fx-on .i-card__media img{transition:transform 1.1s var(--ease-out),filter .9s var(--ease-out),opacity .9s}
+.fx-on .i-card__media img{transition:transform 1.1s var(--ease-out),filter .9s var(--ease-out)}
 .fx-on .p-card.reveal:not(.in-view) .p-card__media img,
-.fx-on .i-card.reveal:not(.in-view) .i-card__media img{opacity:0;transform:scale(1.08);filter:saturate(.6) blur(6px)}
-.fx-on .p-card.reveal.in-view:not(:hover) .p-card__media img,
-.fx-on .i-card.reveal.in-view:not(:hover) .i-card__media img{opacity:1;transform:scale(1);filter:none}
+.fx-on .i-card.reveal:not(.in-view) .i-card__media img{filter:saturate(.75) brightness(.92)}
+.fx-on .p-card.reveal.in-view .p-card__media img,
+.fx-on .i-card.reveal.in-view .i-card__media img{filter:none}
 
 /* 15.3 Trust tiles get a moving border light */
 .fx-on .section--ink .grid > .reveal{
@@ -755,8 +800,253 @@
 /* 15.8 Reduced motion */
 @media (prefers-reduced-motion:reduce){
   .fx-on .p-card.reveal:not(.in-view) .p-card__media img,
-  .fx-on .i-card.reveal:not(.in-view) .i-card__media img{opacity:1;transform:none;filter:none}
+  .fx-on .i-card.reveal:not(.in-view) .i-card__media img{filter:none}
   .fx-on .section--ink .grid > .reveal::after,
   .fx-on .visit__form .btn--gold::after{display:none}
   .fx-on .confirm.show h4::after{animation:none;transform:rotate(-45deg) scaleX(1)}
+}
+
+/* ============================================================
+   16. STATIC MAP FALLBACK
+   Used when Leaflet or the OSM tile CDN is blocked. No network,
+   no images: corridor grid, connecting roads and gold pins.
+   ============================================================ */
+.map-fallback{
+  position:absolute;inset:0;overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 18% 12%,rgba(201,164,92,.16),transparent 58%),
+    radial-gradient(90% 80% at 82% 88%,rgba(23,48,41,.14),transparent 62%),
+    linear-gradient(160deg,#F6F1E6,#EDE4D2 68%,#E7DCC7);
+  color:rgba(23,48,41,.16);
+  border-radius:inherit
+}
+.map-fallback__grid,
+.map-fallback__links{position:absolute;inset:0;width:100%;height:100%}
+.map-fallback__links line{stroke:rgba(169,116,31,.4);stroke-width:.45;stroke-dasharray:1.6 1.4}
+.map-fallback__pin{
+  position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);
+  display:flex;align-items:center;gap:.42rem;
+  padding:.3rem .6rem .3rem .34rem;border-radius:999px;cursor:pointer;
+  background:rgba(255,255,255,.82);border:1px solid rgba(201,164,92,.5);
+  box-shadow:0 8px 20px -12px rgba(10,20,17,.45);
+  font:inherit;font-size:.7rem;font-weight:700;color:var(--ink);letter-spacing:.01em;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),background .3s;
+  white-space:nowrap
+}
+.map-fallback__pin i{
+  width:9px;height:9px;border-radius:50%;background:var(--gold-deep);flex:none;
+  box-shadow:0 0 0 4px rgba(201,164,92,.22)
+}
+.map-fallback__pin:hover,
+.map-fallback__pin.is-on{transform:translate(-50%,-50%) scale(1.07);background:#fff;box-shadow:0 14px 30px -14px rgba(10,20,17,.5)}
+.map-fallback__pin.is-on i{background:var(--ink);box-shadow:0 0 0 5px rgba(201,164,92,.34)}
+.map-fallback__pin:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.map-fallback__card{
+  position:absolute;left:1rem;right:1rem;bottom:1rem;z-index:2;
+  display:flex;flex-direction:column;gap:.2rem;
+  padding:.85rem 1rem;border-radius:var(--r-md);
+  background:rgba(248,245,238,.94);border:1px solid rgba(201,164,92,.4);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  box-shadow:0 22px 40px -28px rgba(10,20,17,.7)
+}
+.map-fallback__card b{font-family:var(--serif);font-size:1rem;color:var(--ink)}
+.map-fallback__rate{font-size:.82rem;font-weight:700;color:var(--gold-deep)}
+.map-fallback__meta{font-size:.72rem;color:var(--muted);line-height:1.5}
+.map-fallback__meta em{font-style:normal;color:#2E7D5F;font-weight:700}
+.map-fallback__card a{font-size:.76rem;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:2px;margin-top:.15rem}
+.map-fallback__note{
+  position:absolute;right:.8rem;top:.8rem;z-index:2;margin:0;font-size:.66rem;font-weight:600;
+  color:var(--muted-2);background:rgba(248,245,238,.8);border-radius:999px;padding:.2rem .55rem
+}
+@media (max-width:640px){
+  .map-fallback{height:460px}
+  .map-fallback__pin{padding:.26rem .5rem .26rem .3rem;font-size:.64rem}
+  .map-fallback__note{left:.8rem;right:auto;max-width:60%}
+}
+@media (prefers-reduced-motion:reduce){
+  .map-fallback__pin{transition:none}
+  .map-fallback__pin:hover,.map-fallback__pin.is-on{transform:translate(-50%,-50%)}
+}
+
+/* ============================================================
+   17. INTENSIFIED — a stronger read of the same language
+   Everything here is a deliberate escalation of an effect that
+   already exists above; nothing new is introduced.
+   ============================================================ */
+
+/* 17.1 The loader gets a real entrance: mark, rule and wordmark */
+.fx-halo__ring{width:128px;height:128px}
+.fx-halo__mark{font-size:2.1rem;letter-spacing:-.01em}
+.fx-halo__word{
+  margin-top:1.1rem;font-size:.6rem;font-weight:700;letter-spacing:.42em;
+  text-transform:uppercase;color:rgba(248,245,238,.42);
+  opacity:0;animation:fxMarkIn .9s var(--ease-out) .35s forwards
+}
+.fx-halo__bar{
+  position:relative;width:132px;height:1px;margin-top:1.35rem;
+  background:rgba(248,245,238,.14);overflow:hidden
+}
+.fx-halo__bar i{
+  position:absolute;inset:0;transform-origin:left;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--gold-deep),var(--gold-light));
+  animation:fxLoad 1.05s var(--ease-out) .1s forwards
+}
+@keyframes fxLoad{to{transform:scaleX(1)}}
+
+/* 17.2 Hero title: a much slower, deeper push on the photo, and a
+       second gold arc that traces the headline as it lands */
+.fx-on .hero__glow{filter:blur(22px);opacity:1;animation-duration:24s}
+.fx-bars i{height:0}
+.fx-bars.on i{height:56px}
+
+.fx-on .hero h1{text-wrap:balance}
+.fx-on .hero h1 .line > span{transform:translateY(105%)}
+.fx-on .hero h1 .line:nth-child(1) > span{animation-duration:1.15s}
+.fx-on .hero h1 .line:nth-child(2) > span{animation-duration:1.15s;animation-delay:.22s}
+.fx-on .hero h1 .line:nth-child(3) > span{animation-duration:1.15s;animation-delay:.38s}
+
+/* 17.3 Section headings rise in three dimensions, not just up */
+.fx-on .fx-head{perspective:600px}
+.fx-on .fx-head .fx-word{transform-style:preserve-3d}
+@keyframes fxWordUp3D{
+  from{transform:translateY(112%) rotateX(-32deg);opacity:0}
+  to{transform:translateY(0) rotateX(0);opacity:1}
+}
+.fx-on .fx-head.in-view .fx-word > i{animation-name:fxWordUp3D;animation-duration:.95s}
+
+/* 17.4 Cards: deeper tilt, and the spotlight follows the cursor faster */
+@media (hover:hover) and (pointer:fine){
+  .fx-on .p-card.fx-tilt{
+    transform:perspective(760px) rotateX(calc(var(--rx,0) * 1.45deg))
+              rotateY(calc(var(--ry,0) * 1.45deg)) translateY(-7px) scale(1.012);
+    box-shadow:0 30px 60px -34px rgba(10,20,17,.5),0 0 0 1px rgba(201,164,92,.28)
+  }
+}
+.fx-on .p-card::after,
+.fx-on .l-card::after,
+.fx-on .i-card::after{
+  background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),rgba(201,164,92,.2),transparent 62%)
+}
+
+/* 17.5 The progress rail gets a travelling highlight, and thickens */
+.fx-progress{height:3px}
+.fx-progress::after{
+  content:"";position:absolute;top:-2px;right:0;width:60px;height:7px;
+  background:radial-gradient(closest-side,rgba(255,243,214,.95),transparent);
+  filter:blur(2px)
+}
+
+/* 17.6 Buttons: a stronger magnet and a visible press */
+@media (hover:hover) and (pointer:fine){
+  .fx-on .btn:hover{box-shadow:0 16px 34px -18px rgba(201,164,92,.75)}
+  .fx-on .btn--gold:hover{background:linear-gradient(100deg,#E3C184,#D3AE66 45%,#BB9650)}
+}
+.fx-on .btn:active{scale:.975}
+
+/* 17.7 Numerals tick up on hover in the stat rail */
+.fx-on .hero__stats > div{transition:background .4s var(--ease)}
+.fx-on .hero__stats > div:hover{background:rgba(201,164,92,.08)}
+.fx-on .hero__stats > div:hover .stat__num{transform:translateY(-2px)}
+.fx-on .hero__stats .stat__num{transition:transform .4s var(--ease)}
+
+/* 17.8 The localities' spark bars leap when the card is entered */
+@keyframes fxBarLeap{
+  0%,100%{transform:scaleY(var(--h))}
+  45%{transform:scaleY(calc(var(--h) * 1.28))}
+}
+@media (hover:hover) and (pointer:fine){
+  .fx-on .l-card:hover .l-card__bars i{animation:fxBarLeap .8s var(--ease-out) both}
+  .fx-on .l-card:hover .l-card__bars i:nth-child(2n){animation-delay:.04s}
+  .fx-on .l-card:hover .l-card__bars i:nth-child(3n){animation-delay:.08s}
+}
+
+/* 17.9 The dark bands breathe harder */
+.fx-on .section--ink::before{animation-duration:16s}
+.fx-on .calc__out::before{animation-duration:13s}
+
+/* 17.10 Detail overlay opening: a slow push-in on the photograph */
+.fx-on .detail.open .dtl-hero__bg img{
+  animation:fxDetailPush 1.6s var(--ease-out) both
+}
+@keyframes fxDetailPush{
+  from{scale:1.12}
+  to{scale:1}
+}
+.fx-on .detail.open .dtl-hero{overflow:hidden}
+
+/* 17.11 Wipes and reveals get a hair more travel */
+.fx-on .reveal{transform:translateY(38px)}
+.fx-on .reveal[data-fx="left"]{transform:translateX(-46px)}
+.fx-on .reveal[data-fx="right"]{transform:translateX(46px)}
+.fx-on .reveal[data-fx="scale"]{transform:scale(.9)}
+
+/* 17.12 Reduced motion strips the whole escalation */
+@media (prefers-reduced-motion:reduce){
+  .fx-halo__bar,.fx-halo__word{animation:none;opacity:1}
+  .fx-on .hero__glow{filter:none;animation:none}
+  .fx-on .fx-head .fx-word > i{animation:none;transform:none;opacity:1}
+  .fx-on .reveal{transform:none}
+  .fx-progress::after{display:none}
+  .fx-on .btn:active{scale:1}
+  .fx-on .l-card:hover .l-card__bars i{animation:none;transform:scaleY(var(--h))}
+  .fx-on .detail.open .dtl-hero__bg img{animation:none;scale:1}
+  .fx-on .hero__stats > div:hover .stat__num{transform:none}
+}
+
+/* 17.13 Loader stack + pointer spotlight in the hero */
+.fx-halo__stack{display:flex;flex-direction:column;align-items:center;text-align:center}
+.fx-on .fx-hero-spot{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(520px circle at var(--sx,50%) var(--sy,40%),
+    rgba(201,164,92,.2),rgba(201,164,92,.06) 42%,transparent 66%);
+  mix-blend-mode:screen;
+  transition:opacity .6s var(--ease)
+}
+@media (hover:none){.fx-on .fx-hero-spot{display:none}}
+@media (prefers-reduced-motion:reduce){.fx-on .fx-hero-spot{display:none}}
+
+/* ============================================================
+   18. SCROLL-COST CONTROL
+   Measured on a 390px viewport: the decorative filters and inline
+   transitions above cost ~750ms of style recalculation across a
+   one-screen-per-100ms scroll. These elements do not need to repaint
+   continuously, so pin them down below 900px and let the cheap
+   effects (reveals, transforms, opacity) carry the motion there.
+   ============================================================ */
+@media (max-width:899px){
+  /* blurred blobs: paint once, never animate */
+  .fx-nebula,
+  .fx-on .hero__glow,
+  .fx-on .section--ink::before,
+  .fx-on .site-footer::before{animation:none!important}
+  .fx-nebula{filter:blur(24px)}
+  .fx-on .hero__glow{filter:blur(18px)}
+
+  /* the particle canvas is the single most expensive layer to composite
+     under a scrolling page; the hero already has grain + glow + photo */
+  .fx-particles{display:none}
+
+  /* heavy backdrop blurs on a scrolling surface */
+  .fx-on .site-header,
+  .fx-on .hero__stats,
+  .fx-on .p-card__gallery button,
+  .fx-on .modal__scrim,
+  .map-fallback__card{
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+  }
+  .fx-on .site-header{background:rgba(8,17,14,.97)}
+  .fx-on .site-header.is-stuck,
+  .fx-on .site-header.is-solid{background:rgba(8,17,14,.99)}
+  .fx-on .hero__stats{background:rgba(12,24,20,.92)}
+
+  /* per-element transitions that fire dozens of times per scroll */
+  .fx-on .reveal{transition-duration:.7s}
+  .fx-on .p-card__media img,
+  .fx-on .i-card__media img{transition-duration:.6s}
+
+  /* the wipe is a clip-path animation across a full card; on a phone the
+     fade is indistinguishable and far cheaper */
+  .fx-on .fx-wipe{clip-path:none!important;animation:none!important}
+
+  .fx-on .fx-hero-spot{display:none}
 }

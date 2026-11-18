@@ -70,9 +70,11 @@
     });
     /* Hero headline choreography stays with the base CSS; it is
        held paused by stylesheet until body.fx-loaded is set. */
-    /* Every other gold phrase in a heading picks up the sheen */
-    $$('.sec-head .h2 .gold, .section--ink .h2 .gold').forEach(function(g){
-      g.classList.add('fx-sheen');
+    /* The gold line inside each split heading gets its travelling sheen.
+       Painting it per word is what makes it work (see the note in
+       fx.css); a phrase that was never split is left on the base gold. */
+    $$('.sec-head .h2 .gold').forEach(function(g){
+      if (g.querySelector('.fx-word')) g.classList.add('fx-sheen');
     });
   }
 
@@ -191,6 +193,19 @@
   }
 
   var io = null, ruleIO = null;
+  /* Split headings start hidden. If an observer never reports them
+     (page restored from cache, tab backgrounded during boot, a layout
+     shift), reveal them on a timer rather than leaving a blank line. */
+  function armHeadingFallback(){
+    $$('.fx-head').forEach(function(h){
+      if (h.dataset.fxFallback) return;
+      h.dataset.fxFallback = '1';
+      setTimeout(function(){
+        if (!h.classList.contains('in-view')) h.classList.add('in-view');
+      }, 1400);
+    });
+  }
+
   function observeAll(){
     if (!('IntersectionObserver' in window)){
       $$('.reveal').forEach(function(el){ el.classList.add('in-view'); });
@@ -334,6 +349,33 @@
     }, { passive: true });
   }
 
+  /* A second, tighter gold light that follows the pointer across the
+     hero. `translate` again, so it composes with the floatGlow animation. */
+  function bindHeroSpot(){
+    if (!fine) return;
+    var hero = $('.hero');
+    if (!hero) return;
+    var spot = document.createElement('div');
+    spot.className = 'fx-hero-spot';
+    spot.setAttribute('aria-hidden', 'true');
+    hero.appendChild(spot);
+    var tx = 50, ty = 40, cx = 50, cy = 40, raf1 = 0;
+    function tick(){
+      raf1 = 0;
+      cx += (tx - cx) * 0.12;
+      cy += (ty - cy) * 0.12;
+      spot.style.setProperty('--sx', cx.toFixed(2) + '%');
+      spot.style.setProperty('--sy', cy.toFixed(2) + '%');
+      if (Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1) raf1 = raf(tick);
+    }
+    hero.addEventListener('pointermove', function(e){
+      var r = hero.getBoundingClientRect();
+      tx = ((e.clientX - r.left) / r.width) * 100;
+      ty = ((e.clientY - r.top) / r.height) * 100;
+      if (!raf1) raf1 = raf(tick);
+    }, { passive: true });
+  }
+
   /* ----------------------------------------------------------
      6. Magnetic buttons
      ---------------------------------------------------------- */
@@ -385,7 +427,16 @@
     m.className = 'fx-halo__mark';
     m.textContent = 'M';
     ring.appendChild(m);
-    c.appendChild(ring);
+    var word = document.createElement('span');
+    word.className = 'fx-halo__word';
+    word.textContent = 'Maison Hyderabad';
+    var bar = document.createElement('span');
+    bar.className = 'fx-halo__bar';
+    bar.appendChild(document.createElement('i'));
+    var stack = document.createElement('div');
+    stack.className = 'fx-halo__stack';
+    stack.appendChild(ring); stack.appendChild(word); stack.appendChild(bar);
+    c.appendChild(stack);
     body.appendChild(c);
 
     var dropped = false;
@@ -397,8 +448,8 @@
       retractBars();
       setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 620);
     }
-    setTimeout(drop, 1200);                       /* hard ceiling */
-    setTimeout(retractBars, 1600);                /* absolute backstop */
+    setTimeout(drop, 1400);                       /* hard ceiling */
+    setTimeout(retractBars, 1800);                /* absolute backstop */
     if (document.readyState === 'complete') setTimeout(drop, 260);
     else window.addEventListener('load', function(){ setTimeout(drop, 260); }, { once: true });
   }
@@ -633,6 +684,7 @@
     observeAll();
     bindCardFx();
     bindHeroGlow();
+    bindHeroSpot();
     bindMagnet();
     watchBadge();
     flashCalcs();
@@ -668,6 +720,19 @@
     window.addEventListener('hashchange', rebind);
     setTimeout(rebind, 700);
     setTimeout(rebind, 1800);
+    armHeadingFallback();
+
+    /* Absolute safety net: nothing on this page may stay invisible
+       because an animation never started. */
+    setTimeout(function(){
+      $$('.reveal:not(.in-view), .fx-head:not(.in-view)').forEach(function(el){
+        el.classList.add('in-view');
+      });
+      $$('.fx-wipe').forEach(function(el){
+        el.classList.remove('fx-wipe', 'fx-wiping');
+        el.style.removeProperty('--fx-w');
+      });
+    }, 4000);
   }
 
   mountHalo();                    /* earliest possible: before first paint */
