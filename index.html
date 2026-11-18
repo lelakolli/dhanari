@@ -3069,32 +3069,49 @@ function renderLocalityMapFallback(mapEl){
   fig.setAttribute('role','img');
   fig.setAttribute('aria-label','Static diagram of the eight tracked micro-markets across the west, north and south corridors of Hyderabad');
   fig.innerHTML = `
-    <svg class="map-fallback__grid" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
-      <defs>
-        <pattern id="mgrid" width="10" height="10" patternUnits="userSpaceOnUse">
-          <path d="M10 0H0v10" fill="none" stroke="currentColor" stroke-width=".15"/>
-        </pattern>
-      </defs>
-      <rect width="100" height="100" fill="url(#mgrid)"/>
-      <path d="M0 62 Q38 54 100 70" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 2" opacity=".55"/>
-      <path d="M0 34 Q46 30 100 40" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 2" opacity=".55"/>
-      <text x="3" y="60" font-size="2.6" fill="currentColor" opacity=".7">OUTER RING ROAD</text>
-      <text x="3" y="32" font-size="2.6" fill="currentColor" opacity=".7">NH-65</text>
-    </svg>
-    <svg class="map-fallback__links" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none">
-      ${links.map(([a,b]) => {
-        const A = coords[a], B = coords[b];
-        if (!A || !B) return '';
-        return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}"/>`;
+    <div class="map-fallback__canvas">
+      <svg class="map-fallback__grid" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <defs>
+          <pattern id="mgrid" width="8" height="8" patternUnits="userSpaceOnUse">
+            <path d="M8 0H0v8" fill="none" stroke="currentColor" stroke-width=".12"/>
+          </pattern>
+        </defs>
+        <rect width="100" height="100" fill="url(#mgrid)"/>
+        <!-- Outer Ring Road: the loop the western corridors hang off -->
+        <ellipse cx="34" cy="50" rx="31" ry="39" fill="none" stroke="currentColor"
+          stroke-width="1.1" stroke-dasharray="3.4 2.2" opacity=".5"/>
+        <!-- NH-65 east-west trunk -->
+        <path d="M0 44 Q40 40 100 50" fill="none" stroke="currentColor"
+          stroke-width=".9" stroke-dasharray="3 2" opacity=".42"/>
+        <!-- radials out to the northern corridor and the airport road -->
+        <path d="M34 11 L34 89" fill="none" stroke="currentColor" stroke-width=".5"
+          stroke-dasharray="2 2.4" opacity=".26"/>
+        <path d="M3 50 L65 50" fill="none" stroke="currentColor" stroke-width=".5"
+          stroke-dasharray="2 2.4" opacity=".22"/>
+        <path d="M40 66 L52 96" fill="none" stroke="currentColor" stroke-width=".5"
+          stroke-dasharray="2 2.4" opacity=".22"/>
+      </svg>
+      <svg class="map-fallback__links" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none">
+        ${links.map(([a,b]) => {
+          const A = coords[a], B = coords[b];
+          if (!A || !B) return '';
+          return `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}"/>`;
+        }).join('')}
+      </svg>
+      <span class="map-fallback__zone map-fallback__zone--west" aria-hidden="true"></span>
+      <span class="map-fallback__zone map-fallback__zone--north" aria-hidden="true"></span>
+      <span class="map-fallback__road map-fallback__road--orr" aria-hidden="true">Outer Ring Road</span>
+      <span class="map-fallback__road map-fallback__road--nh" aria-hidden="true">NH-65 &middot; east&ndash;west</span>
+      <span class="map-fallback__ori" aria-hidden="true">N</span>
+      <span class="map-fallback__scale" aria-hidden="true"><i></i>5 km</span>
+      ${pts.map(l => {
+        const [x,y] = coords[l.id];
+        return `<button type="button" class="map-fallback__pin" data-fid="${l.id}"
+          style="--x:${x}%;--y:${y}%" aria-label="${esc(l.name)}: ${esc(l.trend)} trend, ${l.projects} tracked projects">
+          <i aria-hidden="true"></i><span>${esc(l.name.split(' / ')[0])}</span>
+        </button>`;
       }).join('')}
-    </svg>
-    ${pts.map(l => {
-      const [x,y] = coords[l.id];
-      return `<button type="button" class="map-fallback__pin" data-fid="${l.id}"
-        style="--x:${x}%;--y:${y}%" aria-label="${esc(l.name)}: ${esc(l.trend)} trend, ${l.projects} tracked projects">
-        <i aria-hidden="true"></i><span>${esc(l.name.split(' / ')[0])}</span>
-      </button>`;
-    }).join('')}
+    </div>
     <div class="map-fallback__card" id="fallbackCard" aria-live="polite"></div>
     <p class="map-fallback__note">Interactive map unavailable on this network &mdash; showing the corridor diagram.</p>
   `;
