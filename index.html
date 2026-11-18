@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<noscript><style>
+  /* fx.js adds .fx-on; nothing would ever clear these without it */
+  .reveal,.fx-head,.fx-word,.fx-line,.hero h1 .line > span{
+    opacity:1!important;transform:none!important;filter:none!important;
+    clip-path:none!important;animation:none!important
+  }
+  .fx-halo,.fx-bars,.fx-progress,.fx-cursor{display:none!important}
+  .p-card,.l-card,.i-card,.faq__item{opacity:1!important;transform:none!important}
+</style></noscript>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -693,7 +702,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px rgb
 .shortbar__count b{color:var(--gold);font-family:var(--serif);font-size:1.02rem;font-weight:400}
 .shortbar__names{font-size:.75rem;color:rgba(248,245,238,.5);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:none}
 .shortbar .btn{padding:.6rem 1.05rem;font-size:.79rem}
-.shortbar__clear{width:30px;height:30px;border-radius:50%;border:1px solid rgba(248,245,238,.22);background:transparent;color:rgba(248,245,238,.7);display:grid;place-items:center;flex:none}
+.shortbar__clear{width:40px;height:40px;border-radius:50%;border:1px solid rgba(248,245,238,.22);background:transparent;color:rgba(248,245,238,.7);display:grid;place-items:center;flex:none}
 .shortbar__clear:hover{color:var(--ivory);border-color:var(--danger);background:rgba(176,66,48,.2)}
 .shortbar__clear svg{width:12px;height:12px}
 
