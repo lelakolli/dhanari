@@ -3027,10 +3027,25 @@ function renderLocalityMap(){
     }
   });
   L.control.zoom({position:'bottomright'}).addTo(map);
+
+  /* Leaflet's default marker is a PNG fetched from the same CDN as the
+     library (dist/images/marker-icon.png). On the networks that block
+     tiles, that image is frequently blocked or slow too: the map draws,
+     the marker <img> is created at 25x41, and it never paints, so every
+     pin is invisible. Give every marker an inline SVG icon instead —
+     no network request, and it matches the static fallback exactly. */
+  const pinIcon = L.divIcon({
+    className: 'map-pin',
+    html: '<span class="map-pin__dot"></span>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -10]
+  });
+
   LOCALITIES.forEach(l => {
     const c = coords[l.id];
     if (!c) return;
-    const marker = L.marker(c).addTo(map);
+    const marker = L.marker(c, {icon: pinIcon, title: l.name, alt: l.name}).addTo(map);
     const px = `₹${l.pxLow.toLocaleString('en-IN')}–${l.pxHigh.toLocaleString('en-IN')}/${esc(l.unit)}`;
     marker.bindPopup(`
       <div style="min-width:220px">

@@ -326,15 +326,23 @@
 /* ------------------------------------------------------------
    07. MAP — pin drop + hover lift
    ------------------------------------------------------------ */
-.fx-on .leaflet-marker-icon{animation:fxPinDrop .75s var(--ease-out) both}
+/* Leaflet owns these elements' `transform` (it writes translate3d(x,y,0)
+   to place each pin). Animating `transform` here — or ending on
+   `transform:none` — overwrites that and stacks every marker in the
+   corner. Use the individual `translate`/`scale` properties instead: they
+   compose with Leaflet's transform and leave it intact. */
+.fx-on .leaflet-marker-icon{
+  animation:fxPinDrop .75s var(--ease-out) both;
+  transform-origin:center bottom
+}
 .fx-on .leaflet-marker-icon:nth-child(odd){animation-delay:.06s}
 .fx-on .leaflet-marker-icon:hover{animation:fxPinHover .5s var(--ease-out) both}
 @keyframes fxPinDrop{
-  0%{opacity:0;transform:translateY(-26px) scale(.6)}
-  65%{opacity:1;transform:translateY(2px) scale(1.06)}
-  100%{opacity:1;transform:none}
+  0%{opacity:0;translate:0 -26px;scale:.6}
+  65%{opacity:1;translate:0 2px;scale:1.06}
+  100%{opacity:1;translate:0 0;scale:1}
 }
-@keyframes fxPinHover{to{transform:translateY(-5px) scale(1.12)}}
+@keyframes fxPinHover{to{translate:0 -5px;scale:1.12}}
 
 /* ------------------------------------------------------------
    08. SECTION DIVIDERS — gold hairline draw
@@ -650,7 +658,7 @@
 
 /* 13.10 Map pins: gold ring pulse on the marker */
 .fx-on .leaflet-marker-icon::after{
-  content:"";position:absolute;inset:-6px;border-radius:50%;
+  content:"";position:absolute;inset:0;border-radius:50%;
   border:1px solid rgba(201,164,92,.6);
   animation:fxPinRing 2.8s ease-out infinite;
   pointer-events:none
@@ -1118,4 +1126,40 @@
   .fx-on .fx-wipe{clip-path:none!important;animation:none!important}
 
   .fx-on .fx-hero-spot{display:none}
+}
+
+/* ============================================================
+   19. LEAFLET MARKERS
+   Leaflet's stock marker is a PNG on the same CDN as the library, so a
+   network that blocks the tiles usually blocks the marker art too: the
+   <img> is created, sits at 25x41, and never paints. These markers are
+   pure CSS, so a pin always lands on the map.
+   ============================================================ */
+.map-pin{
+  background:none;border:0;
+  display:grid;place-items:center;
+  filter:drop-shadow(0 4px 6px rgba(10,20,17,.35))
+}
+.map-pin__dot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--gold-deep,#A9741F);
+  border:2.5px solid #fff;
+  box-shadow:0 0 0 3px rgba(201,164,92,.32),0 0 0 7px rgba(201,164,92,.14);
+  transition:transform .25s var(--ease, ease),box-shadow .25s var(--ease, ease)
+}
+.map-pin:hover .map-pin__dot,
+.map-pin:focus-visible .map-pin__dot{
+  transform:scale(1.3);
+  box-shadow:0 0 0 4px rgba(201,164,92,.45),0 0 0 10px rgba(201,164,92,.2)
+}
+/* a soft pulse on the corridor the panel is currently describing */
+.map-pin.is-on .map-pin__dot{
+  background:#0E2A22;transform:scale(1.25);
+  box-shadow:0 0 0 4px rgba(201,164,92,.5),0 0 0 11px rgba(201,164,92,.18)
+}
+/* never let a broken image fall back to the browser's broken-image glyph */
+.leaflet-marker-icon img,
+.leaflet-container img.leaflet-marker-icon{border:0}
+@media (prefers-reduced-motion:reduce){
+  .map-pin__dot,.map-pin:hover .map-pin__dot,.map-pin:focus-visible .map-pin__dot{transition:none}
 }
